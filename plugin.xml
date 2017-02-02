@@ -70,6 +70,7 @@
     <source-file src="src/android/Ble.java" target-dir="src/com/cordova/onyxble"/>
     <framework src="src/android/ble.gradle" custom="true" type="gradleReference"/>
     <resource-file src="src/android/libs/OnyxBeaconLibrary-release.aar" target="libs/OnyxBeaconLibrary-release.aar"/>
+    <hook type="after_plugin_install" src="hook/afterPluginInstall.js" />
   </platform>
 
   <platform name="ios">
