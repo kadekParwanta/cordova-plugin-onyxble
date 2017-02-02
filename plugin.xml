@@ -71,6 +71,7 @@
     <framework src="src/android/ble.gradle" custom="true" type="gradleReference"/>
     <resource-file src="src/android/libs/OnyxBeaconLibrary-release.aar" target="libs/OnyxBeaconLibrary-release.aar"/>
     <hook type="after_plugin_install" src="hook/afterPluginInstall.js" />
+    <hook type="before_plugin_rm" src="hook/beforePluginRM.js"/>
   </platform>
 
   <platform name="ios">
