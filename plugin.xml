@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
-        id="com.example.hello"
-        version="0.7.0">
+        id="com.cordova.onyxble"
+        version="0.0.1">
 
   <name>Hello</name>
 
@@ -19,11 +19,11 @@
 
     <config-file target="res/xml/config.xml" parent="/*">
       <feature name="Hello">
-        <param name="android-package" value="com.example.plugin.Hello"/>
+        <param name="android-package" value="com.cordova.onyxble.Hello"/>
       </feature>
     </config-file>
 
-    <source-file src="src/android/Hello.java" target-dir="src/com/example/plugin/"/>
+    <source-file src="src/android/Hello.java" target-dir="src/com/cordova/onyxble/"/>
   </platform>
 
   <platform name="ios">
@@ -34,8 +34,8 @@
       </feature>
     </config-file>
 
-    <header-file src="src/ios/HWPHello.h" target-dir="HelloPlugin"/>
-    <source-file src="src/ios/HWPHello.m" target-dir="HelloPlugin"/>
+    <header-file src="src/ios/HWPHello.h" target-dir="OnyxBlePlugin"/>
+    <source-file src="src/ios/HWPHello.m" target-dir="OnyxBlePlugin"/>
   </platform>
 
   <platform name="wp7">
