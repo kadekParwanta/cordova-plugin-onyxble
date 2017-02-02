@@ -23,7 +23,53 @@
       </feature>
     </config-file>
 
+    <config-file target="AndroidManifest.xml" parent="/manifest">
+      <!-- Permissions -->
+      <uses-permission android:name="android.permission.BLUETOOTH"/>
+      <uses-permission android:name="android.permission.INTERNET"/>
+      <uses-permission android:name="android.permission.WAKE_LOCK" />
+      <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+      <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+      <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+
+      <!-- Push permission -->
+      <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+      <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    </config-file>
+
+    <config-file target="AndroidManifest.xml" parent="/manifest/application">
+      <provider
+          android:authorities="com.kadek.onyxreceiver.provider"
+          android:name="com.onyxbeaconservice.provider.IBeaconProvider"
+          android:enabled="true"
+          android:exported="true">
+      </provider>
+
+      <receiver android:name="com.cordova.onyxble.ContentReceiver">
+          <intent-filter>
+              <action android:name="com.cordova.onyxble.content" />
+          </intent-filter>
+      </receiver>
+
+      <receiver android:name="com.cordova.onyxble.BleStateReceiver">
+          <intent-filter>
+              <action android:name="com.cordova.onyxble.scan" />
+          </intent-filter>
+      </receiver>
+
+      <meta-data android:name="clientid" android:value="cd8d429b30f58c577f2bc0dbfd07d03b07de7d2f" />
+      <meta-data android:name="secret" android:value="ce7ada82d2b3917dd35520747bf6492b4f5e1d4c" />   
+      <meta-data tools:replace="android:value" android:name="com.google.android.gms.version" android:value="8487000" /> 
+    </config-file>
+
     <source-file src="src/android/Hello.java" target-dir="src/com/cordova/onyxble/"/>
+    <source-file src="src/android/ContentReceiver.java" target-dir="src/com/cordova/onyxble"/>
+    <source-file src="src/android/BleStateListener.java" target-dir="src/com/cordova/onyxble"/>
+    <source-file src="src/android/BleStateReceiver.java" target-dir="src/com/cordova/onyxble"/>      
+    <source-file src="src/android/Ble.java" target-dir="src/com/cordova/onyxble"/>
+    <framework src="src/android/ble.gradle" custom="true" type="gradleReference"/>
+    <resource-file src="src/android/libs/OnyxBeaconLibrary-release.aar" target="libs/OnyxBeaconLibrary-release.aar"/>
   </platform>
 
   <platform name="ios">

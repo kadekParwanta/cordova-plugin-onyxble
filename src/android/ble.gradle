@@ -1,0 +1,14 @@
+apply plugin: 'realm-android'
+
+repositories {
+  jcenter()
+  flatDir {
+      dirs 'libs'
+   }
+}
+
+dependencies {
+   compile(name:'OnyxBeaconLibrary-release', ext:'aar')
+   compile 'com.google.android.gms:play-services-location:8.4.0'
+   compile 'com.squareup.retrofit:retrofit:1.9.0'
+}
