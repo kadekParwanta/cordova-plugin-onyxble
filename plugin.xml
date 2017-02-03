@@ -1,93 +1,95 @@
-<?xml version="1.0" encoding="utf-8"?>
-<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
-        id="com.cordova.onyxble"
-        version="0.0.1">
+<?xml version="1.0" encoding="UTF-8"?>
 
-  <name>Hello</name>
+<plugin xmlns="http://cordova.apache.org/ns/plugins/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android"          
+        xmlns:tools="http://schemas.android.com/tools"   
+        id="com-cordova-ble"
+        version="2.0.1-dev">
+    <name>Ble</name>
+    <description>OnyxBeacon plugin</description>
+    <license>Commercial</license>
 
-  <engines>
-    <engine name="cordova" version=">=3.4.0"/>
-  </engines>
+    <engines>
+        <engine name="cordova" version=">=4.0.0"/>
+    </engines>
+   
+    <js-module src="www/ble.js" name="ble">
+        <clobbers target="ble"/>
+    </js-module>
 
-  <asset src="www/hello.js" target="js/hello.js"/>
+    <preference name="CLIENT_ID" default="" />
+    <preference name="SECRET" default="" />
+    <preference name="PACKAGE_NAME" default="" />
+    <preference name="GMS_VERSION" default="8487000" />
 
-  <js-module src="www/hello.js" name="hello">
-    <clobbers target="hello" />
-  </js-module>
+    <!-- android -->
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="Ble">
+                <param name="android-package" value="com.cordova.ble.Ble"/>
+            </feature>
+        </config-file>
 
-  <platform name="android">
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <!-- Permissions -->
+            <uses-permission android:name="android.permission.BLUETOOTH"/>
+            <uses-permission android:name="android.permission.INTERNET"/>
+            <uses-permission android:name="android.permission.WAKE_LOCK" />
+            <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+            <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+            <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
 
-    <config-file target="res/xml/config.xml" parent="/*">
-      <feature name="Hello">
-        <param name="android-package" value="com.cordova.onyxble.Hello"/>
-      </feature>
-    </config-file>
+            <!-- Push permission -->
+            <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+        </config-file>
+       
 
-    <config-file target="AndroidManifest.xml" parent="/manifest">
-      <!-- Permissions -->
-      <uses-permission android:name="android.permission.BLUETOOTH"/>
-      <uses-permission android:name="android.permission.INTERNET"/>
-      <uses-permission android:name="android.permission.WAKE_LOCK" />
-      <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-      <uses-permission android:name="android.permission.USE_CREDENTIALS" />
-      <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-      <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <provider
+                android:authorities="$PACKAGE_NAME.provider"
+                android:name="com.onyxbeaconservice.provider.IBeaconProvider"
+                android:enabled="true"
+                android:exported="true">
+            </provider>
 
-      <!-- Push permission -->
-      <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-      <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    </config-file>
+            <receiver android:name="com.cordova.ble.ContentReceiver">
+                <intent-filter>
+                    <action android:name="com.cordova.ble.content" />
+                </intent-filter>
+            </receiver>
 
-    <config-file target="AndroidManifest.xml" parent="/manifest/application">
-      <provider
-          android:authorities="com.kadek.onyxreceiver.provider"
-          android:name="com.onyxbeaconservice.provider.IBeaconProvider"
-          android:enabled="true"
-          android:exported="true">
-      </provider>
+            <receiver android:name="com.cordova.ble.BleStateReceiver">
+                <intent-filter>
+                    <action android:name="com.cordova.ble.scan" />
+                </intent-filter>
+            </receiver>
 
-      <receiver android:name="com.cordova.onyxble.ContentReceiver">
-          <intent-filter>
-              <action android:name="com.cordova.onyxble.content" />
-          </intent-filter>
-      </receiver>
+            <meta-data android:name="clientid" android:value="$CLIENT_ID" />
+            <meta-data android:name="secret" android:value="$SECRET" />   
+            <meta-data tools:replace="android:value" android:name="com.google.android.gms.version" android:value="$GMS_VERSION" /> 
+        </config-file>
 
-      <receiver android:name="com.cordova.onyxble.BleStateReceiver">
-          <intent-filter>
-              <action android:name="com.cordova.onyxble.scan" />
-          </intent-filter>
-      </receiver>
+        <source-file src="src/android/ContentReceiver.java" target-dir="src/com/cordova/ble"/>
+        <source-file src="src/android/BleStateListener.java" target-dir="src/com/cordova/ble"/>
+        <source-file src="src/android/BleStateReceiver.java" target-dir="src/com/cordova/ble"/>      
+        <source-file src="src/android/Ble.java" target-dir="src/com/cordova/ble"/>
+        <framework src="src/android/ble.gradle" custom="true" type="gradleReference"/>
+        <resource-file src="src/android/libs/OnyxBeaconLibrary-release.aar" target="libs/OnyxBeaconLibrary-release.aar"/>
+        <hook type="before_plugin_install" src="hook/beforePluginInstall.js" />
+        <hook type="before_plugin_uninstall" src="hook/beforePluginUninstall.js"/>
+    </platform>
 
-      <meta-data android:name="clientid" android:value="cd8d429b30f58c577f2bc0dbfd07d03b07de7d2f" />
-      <meta-data android:name="secret" android:value="ce7ada82d2b3917dd35520747bf6492b4f5e1d4c" />   
-      <meta-data tools:replace="android:value" android:name="com.google.android.gms.version" android:value="8487000" /> 
-    </config-file>
+    <!-- ios -->
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="Ble">
+                <param name="ios-package" value="Ble"/>
+            </feature>
+        </config-file>
 
-    <source-file src="src/android/Hello.java" target-dir="src/com/cordova/onyxble/"/>
-    <source-file src="src/android/ContentReceiver.java" target-dir="src/com/cordova/onyxble"/>
-    <source-file src="src/android/BleStateListener.java" target-dir="src/com/cordova/onyxble"/>
-    <source-file src="src/android/BleStateReceiver.java" target-dir="src/com/cordova/onyxble"/>      
-    <source-file src="src/android/Ble.java" target-dir="src/com/cordova/onyxble"/>
-    <framework src="src/android/ble.gradle" custom="true" type="gradleReference"/>
-    <resource-file src="src/android/libs/OnyxBeaconLibrary-release.aar" target="libs/OnyxBeaconLibrary-release.aar"/>
-    <hook type="after_plugin_install" src="hook/afterPluginInstall.js" />
-    <hook type="before_plugin_rm" src="hook/beforePluginRM.js"/>
-  </platform>
-
-  <platform name="ios">
-    
-    <config-file target="config.xml" parent="/widget">
-      <feature name="Hello">
-        <param name="ios-package" value="HWPHello" />
-      </feature>
-    </config-file>
-
-    <header-file src="src/ios/HWPHello.h" target-dir="OnyxBlePlugin"/>
-    <source-file src="src/ios/HWPHello.m" target-dir="OnyxBlePlugin"/>
-  </platform>
-
-  <platform name="wp7">
-    <source-file src="src/wp7/Hello.cs"/>
-  </platform>
-
+        <header-file src="src/ios/Ble.h"/>
+        <source-file src="src/ios/Ble.m"/>
+    </platform>
 </plugin>

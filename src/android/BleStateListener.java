@@ -1,4 +1,4 @@
-package com.cordova.onyxble;
+package com.cordova.ble;
 
 /**
  * Project : CouponDemo.

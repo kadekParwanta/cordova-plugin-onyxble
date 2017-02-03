@@ -1,4 +1,4 @@
-package com.cordova.onyxble;
+package com.cordova.ble;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
