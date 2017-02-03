@@ -89,8 +89,14 @@ public class Ble extends CordovaPlugin implements BleStateListener  {
                         beaconManager.setAPIContentEnabled(true);
                         beaconManager.enableGeofencing(true);
                         beaconManager.setLocationTrackingEnabled(true);
-                        String clientId = args.getString(0);
-                        String secret = args.getString(1);
+                        String clientId = "";
+                        if (preferences.contains("com-cordova-ble-clientId")) {
+                            clientId = preferences.getString("com-cordova-ble-clientId", "")
+                        }
+                        String secret = "";
+                        if (preferences.contains("com-cordova-ble-secret")) {
+                            secret = preferences.getString("com-cordova-ble-secret", "")
+                        }
                         AuthData authData = new AuthData();
                         authData.setAuthenticationMode(AuthenticationMode.CLIENT_SECRET_BASED);
                         authData.setSecret(secret);

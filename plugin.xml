@@ -17,8 +17,6 @@
         <clobbers target="ble"/>
     </js-module>
 
-    <preference name="CLIENT_ID" default="" />
-    <preference name="SECRET" default="" />
     <preference name="PACKAGE_NAME" default="" />
     <preference name="GMS_VERSION" default="8487000" />
 
@@ -65,9 +63,7 @@
                     <action android:name="com.cordova.ble.scan" />
                 </intent-filter>
             </receiver>
-
-            <meta-data android:name="clientid" android:value="$CLIENT_ID" />
-            <meta-data android:name="secret" android:value="$SECRET" />   
+  
             <meta-data tools:replace="android:value" android:name="com.google.android.gms.version" android:value="$GMS_VERSION" /> 
         </config-file>
 
