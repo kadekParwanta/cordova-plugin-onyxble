@@ -41,8 +41,13 @@ if (cordova.platformId === 'android' || cordova.platformId === 'amazon-fireos' |
     channel.waitForInitialization('onBlePluginReady');
 
     channel.onCordovaReady.subscribe(function () {
-        me.initSDK()
-        channel.onBlePluginReady.fire();
+        me.initSDK(function(success){
+            channel.onBlePluginReady.fire();
+        }, function(e){
+            console.log('failed to init SDK');
+            channel.onBlePluginReady.fire();
+        })
+        
     });
 }
 
