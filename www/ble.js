@@ -23,6 +23,8 @@ var exec = require('cordova/exec'),
     channel = require('cordova/channel'),
     utils = require('cordova/utils');
 
+var MODULE_NAME = 'Ble';
+
 function Ble() { }
 
 /**
@@ -31,8 +33,16 @@ function Ble() { }
  * @param {Function} errorCallback
  */
 Ble.prototype.initSDK = function (success, fail) {
-    exec(success, fail, 'Ble', 'initSDK', []);
+    exec(success, fail, MODULE_NAME, 'initSDK', []);
 };
+
+Ble.prototype.onWebRequested = function (success) {
+    if (typeof (success) !== 'function') {
+        throw "A callback must be provided";
+    }
+
+    exec(success, function(){}, MODULE_NAME, 'addWebListener', []);
+}
 
 var me = new Ble();
 

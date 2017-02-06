@@ -45,6 +45,7 @@
        
 
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <activity android:name="com.cordova.ble.ClickActivity"/>
             <provider
                 android:authorities="$PACKAGE_NAME.provider"
                 android:name="com.onyxbeaconservice.provider.IBeaconProvider"
@@ -70,7 +71,9 @@
         <source-file src="src/android/ContentReceiver.java" target-dir="src/com/cordova/ble"/>
         <source-file src="src/android/BleStateListener.java" target-dir="src/com/cordova/ble"/>
         <source-file src="src/android/BleStateReceiver.java" target-dir="src/com/cordova/ble"/>      
-        <source-file src="src/android/Ble.java" target-dir="src/com/cordova/ble"/>
+        <source-file src="src/android/Ble.java" target-dir="src/com/cordova/ble"/>      
+        <source-file src="src/android/BleWebRequestListener.java" target-dir="src/com/cordova/ble"/>      
+        <source-file src="src/android/ClickActivity.java" target-dir="src/com/cordova/ble"/>
         <framework src="src/android/ble.gradle" custom="true" type="gradleReference"/>
         <resource-file src="src/android/libs/OnyxBeaconLibrary-release.aar" target="libs/OnyxBeaconLibrary-release.aar"/>
         <hook type="before_plugin_install" src="hook/beforePluginInstall.js" />
