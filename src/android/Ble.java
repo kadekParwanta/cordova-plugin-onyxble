@@ -95,7 +95,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         Log.v(TAG, "action=" + action);
         try {
             if (action.equals("initSDK")) {
-                enableLocation();
+                enableLocation(args.getString(0), args.getString(1));
             } else if (action.equalsIgnoreCase(ACTION_ADD_ONYX_BEACONS_LISTENER)) {
                 addOnyxBeaconsListener(callbackContext);
             } else if (action.equalsIgnoreCase(ACTION_ADD_WEB_LISTENER)) {
@@ -298,16 +298,16 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         return list;
     }
 
-    private void enableLocation() {
+    private void enableLocation(String clientId, String secret) {
         if (hasPermission(ACCESS_FINE_LOCATION)) {
-            initSDK();
+            initSDK(clientId, secret);
         } else {
             String[] permissions = {ACCESS_FINE_LOCATION};
             requestPermissions(REQUEST_INIT_SDK, permissions);
         }
     }
 
-    private void initSDK() {
+    private void initSDK(String clientId, String secret) {
         beaconManager.setDebugMode(LoggingStrategy.DEBUG);
         beaconManager.setAPIEndpoint("https://connect.onyxbeacon.com");
         beaconManager.setCouponEnabled(true);
@@ -399,7 +399,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
 
         switch (requestCode) {
             case REQUEST_INIT_SDK:
-                initSDK();
+                initSDK("","");
                 break;
         }
     }
