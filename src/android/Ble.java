@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 import com.onyxbeacon.OnyxBeaconApplication;
 import com.onyxbeacon.OnyxBeaconManager;
 import com.onyxbeacon.listeners.OnyxBeaconsListener;
+import com.onyxbeacon.listeners.OnyxTagsListener;
 import com.onyxbeacon.rest.auth.util.AuthData;
 import com.onyxbeacon.rest.auth.util.AuthenticationMode;
 import com.onyxbeacon.rest.model.content.Tag;
@@ -42,6 +43,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
 
     public static final String ACTION_ADD_ONYX_BEACONS_LISTENER = "addOnyxBeaconsListener";
     public static final String ACTION_ADD_WEB_LISTENER = "addWebListener";
+    public static final String ACTION_ADD_TAGS_LISTENER = "addTagsListener";
 
     private CallbackContext messageChannel;
     // OnyxBeacon SDK
@@ -100,6 +102,8 @@ public class Ble extends CordovaPlugin implements BleStateListener {
                 addOnyxBeaconsListener(callbackContext);
             } else if (action.equalsIgnoreCase(ACTION_ADD_WEB_LISTENER)) {
                 addWebListener(callbackContext);
+            } else if (action.equalsIgnoreCase(ACTION_ADD_TAGS_LISTENER)) {
+                addTagsListener(callbackContext);
             } else if (action.equals("getTags")) {
                 beaconManager.getTags();
                 callbackContext.success("Success");
@@ -213,6 +217,25 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         }
 
         return !sendfalse;
+    }
+
+    private void addTagsListener(final CallbackContext callbackContext) {
+        OnyxTagsListener mOnyxTagsListener = new OnyxTagsListener() {
+            @Override
+            public void onTagsReceived(List<Tag> list) {
+                PluginResult result = new PluginResult(PluginResult.Status.OK, gson.toJson(list));
+                result.setKeepCallback(true);
+                callbackContext.sendPluginResult(result);
+            }
+        };
+
+        if (mContentReceiver != null) {
+            mContentReceiver.setOnyxTagsListener(mOnyxTagsListener);
+        } else {
+            PluginResult result = new PluginResult(PluginResult.Status.ERROR, "Failed to add listener");
+            result.setKeepCallback(true);
+            callbackContext.sendPluginResult(result);
+        }
     }
 
     private void addWebListener(final CallbackContext callbackContext) {

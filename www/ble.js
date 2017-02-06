@@ -44,6 +44,22 @@ Ble.prototype.onWebRequested = function (success) {
     exec(success, function(){}, MODULE_NAME, 'addWebListener', []);
 }
 
+Ble.prototype.didRangeBeaconsInRegion = function (success) {
+    if (typeof (success) !== 'function') {
+        throw "A callback must be provided";
+    }
+
+    exec(success, function(){}, MODULE_NAME, 'addOnyxBeaconsListener', []);
+}
+
+Ble.prototype.onTagsReceived = function (success) {
+    if (typeof (success) !== 'function') {
+        throw "A callback must be provided";
+    }
+
+    exec(success, function(){}, MODULE_NAME, 'addTagsListener', []);
+}
+
 var me = new Ble();
 
 if (cordova.platformId === 'android' || cordova.platformId === 'amazon-fireos' || cordova.platformId === 'windowsphone') {
