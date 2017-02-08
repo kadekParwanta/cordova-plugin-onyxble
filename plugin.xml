@@ -90,5 +90,10 @@
 
         <header-file src="src/ios/Ble.h"/>
         <source-file src="src/ios/Ble.m"/>
+        <framework src="CoreBluetooth.framework"/>
+        <framework src="CoreLocation.framework"/>
+        <framework src="src/ios/frameworks/OnyxBeaconLib.framework"/>
+        <framework src="src/ios/frameworks/AFNetworking.framework"/>
+        <framework src="src/ios/frameworks/AFOAuth2Manager.framework"/>
     </platform>
 </plugin>
