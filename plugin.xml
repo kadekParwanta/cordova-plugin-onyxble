@@ -96,7 +96,7 @@
         <framework src="CoreBluetooth.framework"/>
         <framework src="CoreLocation.framework"/>
         <framework src="src/ios/frameworks/OnyxBeaconLib.framework" custom="true" />
-        <framework src="src/ios/frameworks/AFNetworking.framework" custom="true" />
-        <framework src="src/ios/frameworks/AFOAuth2Manager.framework" custom="true" />
+        <framework src="src/ios/frameworks/AFNetworking.framework" custom="true" weak="true"/>
+        <framework src="src/ios/frameworks/AFOAuth2Manager.framework" custom="true" weak="true"/>
     </platform>
 </plugin>
