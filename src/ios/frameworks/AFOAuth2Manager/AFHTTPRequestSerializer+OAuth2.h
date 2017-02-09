@@ -1,6 +1,6 @@
-// UIRefreshControl+AFNetworking.m
+// AFHTTPRequestSerializer+OAuth2.h
 //
-// Copyright (c) 2011–2016 Alamofire Software Foundation ( http://alamofire.org/ )
+// Copyright (c) 2012-2014 AFNetworking (http://afnetworking.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,34 +20,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import <Foundation/Foundation.h>
+#import "AFURLRequestSerialization.h"
 
-#import <TargetConditionals.h>
+@class AFOAuthCredential;
 
-#if TARGET_OS_IOS
-
-#import <UIKit/UIKit.h>
-
-NS_ASSUME_NONNULL_BEGIN
+@interface AFHTTPRequestSerializer (OAuth2)
 
 /**
- This category adds methods to the UIKit framework's `UIRefreshControl` class. The methods in this category provide support for automatically beginning and ending refreshing depending on the loading state of a session task.
- */
-@interface UIRefreshControl (AFNetworking)
+ Sets the "Authorization" HTTP header set in request objects made by the HTTP client to contain the access token within the OAuth credential. This overwrites any existing value for this header.
 
-///-----------------------------------
-/// @name Refreshing for Session Tasks
-///-----------------------------------
-
-/**
- Binds the refreshing state to the state of the specified task.
- 
- @param task The task. If `nil`, automatic updating from any previously specified operation will be disabled.
+ @param credential The OAuth2 credential
  */
-- (void)setRefreshingWithStateOfTask:(NSURLSessionTask *)task;
+- (void)setAuthorizationHeaderFieldWithCredential:(AFOAuthCredential *)credential;
 
 @end
-
-NS_ASSUME_NONNULL_END
-
-#endif

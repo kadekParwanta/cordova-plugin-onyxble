@@ -96,7 +96,32 @@
         <framework src="CoreBluetooth.framework"/>
         <framework src="CoreLocation.framework"/>
         <framework src="src/ios/frameworks/OnyxBeaconLib.framework" custom="true" />
-        <framework src="src/ios/frameworks/AFNetworking.framework" custom="true" weak="true"/>
-        <framework src="src/ios/frameworks/AFOAuth2Manager.framework" custom="true" weak="true"/>
+
+        <header-file src="src/ios/frameworks/AFNetworking/AFHTTPSessionManager.h" />
+        <source-file src="src/ios/frameworks/AFNetworking/AFHTTPSessionManager.m" />
+        <header-file src="src/ios/frameworks/AFNetworking/AFNetworking.h" />
+        <header-file src="src/ios/frameworks/AFNetworking/AFNetworkReachabilityManager.h" />
+        <source-file src="src/ios/frameworks/AFNetworking/AFNetworkReachabilityManager.m" />
+        <header-file src="src/ios/frameworks/AFNetworking/AFSecurityPolicy.h" />
+        <source-file src="src/ios/frameworks/AFNetworking/AFSecurityPolicy.m" />
+        <header-file src="src/ios/frameworks/AFNetworking/AFURLRequestSerialization.h" />
+        <source-file src="src/ios/frameworks/AFNetworking/AFURLRequestSerialization.m" />
+        <header-file src="src/ios/frameworks/AFNetworking/AFURLResponseSerialization.h" />
+        <source-file src="src/ios/frameworks/AFNetworking/AFURLResponseSerialization.m" />
+        <header-file src="src/ios/frameworks/AFNetworking/AFURLSessionManager.h" />
+        <source-file src="src/ios/frameworks/AFNetworking/AFURLSessionManager.m" />
+
+
+        <header-file src="src/ios/frameworks/AFNetworkActivityLogger/AFNetworkActivityLogger.h" />
+        <source-file src="src/ios/frameworks/AFNetworkActivityLogger/AFNetworkActivityLogger.m" />
+
+        <header-file src="src/ios/frameworks/AFOAuth2Manager/AFHTTPRequestSerializer+OAuth2.h" />
+        <source-file src="src/ios/frameworks/AFOAuth2Manager/AFHTTPRequestSerializer+OAuth2.m" />
+        <header-file src="src/ios/frameworks/AFOAuth2Manager/AFOAuth2Manager.h" />
+        <source-file src="src/ios/frameworks/AFOAuth2Manager/AFOAuth2Manager.m" />
+        <header-file src="src/ios/frameworks/AFOAuth2Manager/AFOAuthCredential.h" />
+        <source-file src="src/ios/frameworks/AFOAuth2Manager/AFOAuthCredential.m" />
+
+
     </platform>
 </plugin>

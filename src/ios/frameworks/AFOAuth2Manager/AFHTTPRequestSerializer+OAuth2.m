@@ -1,8 +1,6 @@
+// AFHTTPRequestSerializer+OAuth2.m
 //
-//  UIImage+AFNetworking.h
-//  
-//
-//  Created by Paulo Ferreira on 08/07/15.
+// Copyright (c) 2012-2014 AFNetworking (http://afnetworking.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,14 +20,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#if TARGET_OS_IOS || TARGET_OS_TV
+#import "AFHTTPRequestSerializer+OAuth2.h"
+#import "AFOAuth2Manager.h"
+#import "AFOAuthCredential.h"
 
-#import <UIKit/UIKit.h>
+@implementation AFHTTPRequestSerializer (OAuth2)
 
-@interface UIImage (AFNetworking)
-
-+ (UIImage*) safeImageWithData:(NSData*)data;
+- (void)setAuthorizationHeaderFieldWithCredential:(AFOAuthCredential *)credential {
+    if ([credential.tokenType compare:@"Bearer" options:NSCaseInsensitiveSearch] == NSOrderedSame) {
+        [self setValue:[NSString stringWithFormat:@"Bearer %@", credential.accessToken] forHTTPHeaderField:@"Authorization"];
+    }
+}
 
 @end
-
-#endif
