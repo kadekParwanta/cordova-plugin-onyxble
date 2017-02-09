@@ -346,7 +346,7 @@
     
 }
 
--(void) startServiceWithClientID:(CDVInvokedUrlCommand *)command {
+-(void) initSDK:(CDVInvokedUrlCommand *)command {
     
     NSString* SA_CLIENTID = [command.arguments objectAtIndex:0];
     NSString* SA_SECRET = [command.arguments objectAtIndex:1];
