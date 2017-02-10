@@ -14,6 +14,7 @@
 
 @interface Ble : CDVPlugin<OnyxBeaconContentDelegate, OnyxBeaconDelegate>
 
+- (void) addOnyxBeaconsListener: (CDVInvokedUrlCommand*)command;
 - (void) initSDK: (CDVInvokedUrlCommand*)command;
 
 

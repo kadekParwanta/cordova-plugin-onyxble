@@ -8,9 +8,16 @@
 
 #import "Ble.h"
 
+@interface Ble ()
+
+@property (nonatomic, copy) void (^rangeBeaconsHandler)(NSArray *beacons, OBBeaconRegion *region);
+
+@end
 
 
 @implementation Ble
+
+NSMutableArray *rangeBeaconsListeners;
 
 /*
  NSDictionary *jsonObj = [ [NSDictionary alloc]
@@ -20,6 +27,10 @@
  nil
  ];
  */
+
+- (void)pluginInitialize {
+    _rangeBeaconsHandler = [self createRangeBeaconsHandler];
+}
 
 #pragma mark - Coupan View
 
@@ -35,13 +46,23 @@
 }
 
 
+-(void)addOnyxBeaconsListener:(CDVInvokedUrlCommand *)command {
+    [rangeBeaconsListeners addObject:command.callbackId];
+}
+
+-(void (^)(NSArray *beacons, OBBeaconRegion *region)) createRangeBeaconsHandler {
+    return ^(NSArray *beacons, OBBeaconRegion *region) {
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:beacons];
+        [result setKeepCallbackAsBool:YES];
+        for (NSString *callbackId in rangeBeaconsListeners) {
+            [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+        }
+    };
+}
 
 #pragma mark - OnyxBeaconCouponDelegate Methods
 - (void)didRangeBeacons:(NSArray *)beacons inRegion:(OBBeaconRegion *)region {
-    
-    NSString* jsString = nil;
-    jsString = [NSString stringWithFormat:@"%@(\"%@,%@\");", @"window.cordova.plugins.Ble.didRangeBeacons", beacons,region];
-    [self.commandDelegate evalJs:jsString];
+    _rangeBeaconsHandler(beacons, region);
     
 }
 

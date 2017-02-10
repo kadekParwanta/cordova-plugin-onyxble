@@ -62,7 +62,7 @@ Ble.prototype.onTagsReceived = function (success) {
 
 var me = new Ble();
 
-if (cordova.platformId === 'android' || cordova.platformId === 'amazon-fireos' || cordova.platformId === 'windowsphone') {
+if (cordova.platformId === 'android' || cordova.platformId === 'ios' || cordova.platformId === 'windowsphone') {
     channel.createSticky('onBlePluginReady');
     channel.waitForInitialization('onBlePluginReady');
 
