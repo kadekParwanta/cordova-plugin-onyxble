@@ -48,6 +48,9 @@ NSMutableArray *rangeBeaconsListeners;
 
 
 -(void)addOnyxBeaconsListener:(CDVInvokedUrlCommand *)command {
+    if (rangeBeaconsListeners == nil) {
+        rangeBeaconsListeners = [[NSMutableArray alloc] init];
+    }
     [rangeBeaconsListeners addObject:command.callbackId];
 }
 
@@ -68,7 +71,17 @@ NSMutableArray *rangeBeaconsListeners;
 
 -(void (^)(NSArray *beacons, OBBeaconRegion *region)) createRangeBeaconsHandler {
     return ^(NSArray *beacons, OBBeaconRegion *region) {
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:beacons];
+        NSMutableArray * results = [[NSMutableArray alloc] init];
+        for ( int i = 0, size = beacons.count; i< size; i++) {
+            OBBeacon* beacon = [beacons objectAtIndex:i];
+            NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+            [dict setValue:beacon.major forKey:@"major"];
+            [dict setValue:beacon.minor forKey:@"minor"];
+            [dict setValue:[NSNumber numberWithInteger:beacon.rssi] forKey:@"rssi"];
+            [dict setValue:[NSNumber numberWithInteger:beacon.proximity] forKey:@"proximity"];
+            [results addObject:dict];
+        }
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:results];
         [result setKeepCallbackAsBool:YES];
         for (NSString *callbackId in rangeBeaconsListeners) {
             [self.commandDelegate sendPluginResult:result callbackId:callbackId];
@@ -387,7 +400,7 @@ NSMutableArray *rangeBeaconsListeners;
     NSString* SA_CLIENTID = [command.arguments objectAtIndex:0];
     NSString* SA_SECRET = [command.arguments objectAtIndex:1];
     
-    
+    [[OnyxBeacon sharedInstance] requestAlwaysAuthorization];
     [[OnyxBeacon sharedInstance] startServiceWithClientID:SA_CLIENTID secret:SA_SECRET];
     [[OnyxBeacon sharedInstance] setContentDelegate:self];
     [[OnyxBeacon sharedInstance] setDelegate:self];
