@@ -7,6 +7,7 @@
 //
 
 #import "Ble.h"
+#import "AFNetworkActivityLogger.h"
 
 @interface Ble ()
 
