@@ -56,6 +56,13 @@ NSMutableArray *rangeBeaconsListeners;
         [result setKeepCallbackAsBool:YES];
         [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
     }];
+    [[AFNetworkActivityLogger sharedLogger] setLoggerBlock:^(NSString *message) {
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:message];
+        [result setKeepCallbackAsBool:YES];
+        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+    }];
+    [[AFNetworkActivityLogger sharedLogger] setLevel:AFLoggerLevelDebug];
+    [[AFNetworkActivityLogger sharedLogger] startLogging];
 }
 
 -(void (^)(NSArray *beacons, OBBeaconRegion *region)) createRangeBeaconsHandler {

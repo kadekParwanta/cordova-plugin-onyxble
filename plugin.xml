@@ -88,6 +88,10 @@
             </feature>
         </config-file>
 
+        <config-file target="*-Info.plist" parent="NSLocationAlwaysUsageDescription">
+            <string>SampleApp requires location services to detect beacons around you</string>
+        </config-file>
+
         <header-file src="src/ios/Ble.h"/>
         <source-file src="src/ios/Ble.m"/>
         <framework src="Foundation.framework"/>
