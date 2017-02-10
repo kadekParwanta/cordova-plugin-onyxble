@@ -50,6 +50,14 @@ NSMutableArray *rangeBeaconsListeners;
     [rangeBeaconsListeners addObject:command.callbackId];
 }
 
+-(void) addWebListener:(CDVInvokedUrlCommand *)command {
+    [[OnyxBeacon sharedInstance] setLogger:^(NSString *message) {
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:message];
+        [result setKeepCallbackAsBool:YES];
+        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+    }];
+}
+
 -(void (^)(NSArray *beacons, OBBeaconRegion *region)) createRangeBeaconsHandler {
     return ^(NSArray *beacons, OBBeaconRegion *region) {
         CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:beacons];
@@ -63,7 +71,6 @@ NSMutableArray *rangeBeaconsListeners;
 #pragma mark - OnyxBeaconCouponDelegate Methods
 - (void)didRangeBeacons:(NSArray *)beacons inRegion:(OBBeaconRegion *)region {
     _rangeBeaconsHandler(beacons, region);
-    
 }
 
 
