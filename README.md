@@ -24,7 +24,7 @@ cordova plugin add https://github.com/kadekParwanta/cordova-plugin-onyxble --var
 - Minimum OS Target (Android 4.3, iOS 7)
 
 ## Usage
-The plugin creates the object `window.Ble`.
+The plugin creates the object `window.ble`.
 ```Javascript
 var ble = window.ble;
 if (!ble) {
@@ -45,7 +45,7 @@ ble.onTagsReceived(function(tags){
     console.log('- onTagsReceived ' + tags);
 });
 
-ble.initSDK(clientId, secret, function(success){
+ble.initSDK(function(success){
     console.log('success');
 }, function(err){
     $scope.ErrorCode = "2";
