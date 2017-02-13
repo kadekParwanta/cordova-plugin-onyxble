@@ -8,6 +8,8 @@
 
 #import "Ble.h"
 #import "AFNetworkActivityLogger.h"
+#import <Cordova/CDVConfigParser.h>
+#import <Cordova/NSDictionary+CordovaPreferences.h>
 
 @interface Ble ()
 
@@ -19,6 +21,7 @@
 @implementation Ble
 
 NSMutableArray *rangeBeaconsListeners;
+NSDictionary *preferences;
 
 /*
  NSDictionary *jsonObj = [ [NSDictionary alloc]
@@ -31,6 +34,8 @@ NSMutableArray *rangeBeaconsListeners;
 
 - (void)pluginInitialize {
     _rangeBeaconsHandler = [self createRangeBeaconsHandler];
+    CDVConfigParser *parser = [[CDVConfigParser alloc] init];
+    preferences = parser.settings;
 }
 
 #pragma mark - Coupan View
@@ -396,9 +401,23 @@ NSMutableArray *rangeBeaconsListeners;
 }
 
 -(void) initSDK:(CDVInvokedUrlCommand *)command {
-    
     NSString* SA_CLIENTID = [command.arguments objectAtIndex:0];
     NSString* SA_SECRET = [command.arguments objectAtIndex:1];
+    NSString* clientIDPref = [preferences cordovaSettingForKey:@"com-cordova-ble-clientId"];
+    NSString* secretPref = [preferences cordovaSettingForKey:@"com-cordova-ble-secret"];
+    NSLog(@"initSDK clientIDPref = %@, secretPref=%@",clientIDPref, secretPref);
+    
+    if (![clientIDPref isEqualToString:@""] && clientIDPref.length > 0){
+        SA_CLIENTID = clientIDPref;
+    }
+    
+    if (![secretPref isEqualToString:@""] && secretPref.length > 0){
+        SA_SECRET = secretPref;
+    }
+    
+    
+    NSLog(@"initSDK SA_CLIENTID = %@, SA_SECRET=%@",SA_CLIENTID, SA_SECRET);
+    
     
     [[OnyxBeacon sharedInstance] requestAlwaysAuthorization];
     [[OnyxBeacon sharedInstance] startServiceWithClientID:SA_CLIENTID secret:SA_SECRET];
