@@ -97,7 +97,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         Log.v(TAG, "action=" + action);
         try {
             if (action.equals("initSDK")) {
-                enableLocation(args.getString(0), args.getString(1));
+                enableLocation();
             } else if (action.equalsIgnoreCase(ACTION_ADD_ONYX_BEACONS_LISTENER)) {
                 addOnyxBeaconsListener(callbackContext);
             } else if (action.equalsIgnoreCase(ACTION_ADD_WEB_LISTENER)) {
@@ -321,27 +321,38 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         return list;
     }
 
-    private void enableLocation(String clientId, String secret) {
+    private void enableLocation() {
         if (hasPermission(ACCESS_FINE_LOCATION)) {
-            initSDK(clientId, secret);
+            initSDK();
         } else {
             String[] permissions = {ACCESS_FINE_LOCATION};
             requestPermissions(REQUEST_INIT_SDK, permissions);
         }
     }
 
-    private void initSDK(String clientId, String secret) {
+    private void initSDK() {
         beaconManager.setDebugMode(LoggingStrategy.DEBUG);
         beaconManager.setAPIEndpoint("https://connect.onyxbeacon.com");
         beaconManager.setCouponEnabled(true);
         beaconManager.setAPIContentEnabled(true);
         beaconManager.enableGeofencing(true);
         beaconManager.setLocationTrackingEnabled(true);
+        String clientId, secret;
         if (preferences.contains("com-cordova-ble-clientId")) {
             clientId = preferences.getString("com-cordova-ble-clientId", "");
+        } else {
+            PluginResult result = new PluginResult(PluginResult.Status.ERROR,"missing clientId");
+            result.setKeepCallback(true);
+            messageChannel.sendPluginResult(result);
+            return;
         }
         if (preferences.contains("com-cordova-ble-secret")) {
             secret = preferences.getString("com-cordova-ble-secret", "");
+        } else {
+            PluginResult result = new PluginResult(PluginResult.Status.ERROR,"missing secret");
+            result.setKeepCallback(true);
+            messageChannel.sendPluginResult(result);
+            return;
         }
         AuthData authData = new AuthData();
         authData.setAuthenticationMode(AuthenticationMode.CLIENT_SECRET_BASED);
@@ -420,7 +431,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
 
         switch (requestCode) {
             case REQUEST_INIT_SDK:
-                initSDK("","");
+                initSDK();
                 break;
         }
     }
