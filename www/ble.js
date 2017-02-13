@@ -36,28 +36,36 @@ Ble.prototype.initSDK = function (success, fail) {
     exec(success, fail, MODULE_NAME, 'initSDK', []);
 };
 
-Ble.prototype.onWebRequested = function (success) {
+Ble.prototype.onWebRequested = function (success, fail) {
     if (typeof (success) !== 'function') {
         throw "A callback must be provided";
     }
 
-    exec(success, function(){}, MODULE_NAME, 'addWebListener', []);
+    exec(success, fail, MODULE_NAME, 'addWebListener', []);
 }
 
-Ble.prototype.didRangeBeaconsInRegion = function (success) {
+Ble.prototype.didRangeBeaconsInRegion = function (success, fail) {
     if (typeof (success) !== 'function') {
         throw "A callback must be provided";
     }
 
-    exec(success, function(){}, MODULE_NAME, 'addOnyxBeaconsListener', []);
+    exec(success, fail, MODULE_NAME, 'addOnyxBeaconsListener', []);
 }
 
-Ble.prototype.onTagsReceived = function (success) {
+Ble.prototype.onTagsReceived = function (success, fail) {
     if (typeof (success) !== 'function') {
         throw "A callback must be provided";
     }
 
-    exec(success, function(){}, MODULE_NAME, 'addTagsListener', []);
+    exec(success, fail, MODULE_NAME, 'addTagsListener', []);
+}
+
+Ble.prototype.onError = function (success) {
+    if (typeof (success) !== 'function') {
+        throw "A callback must be provided";
+    }
+
+    exec(success, function(){}, MODULE_NAME, 'addErrorListener', []);
 }
 
 var me = new Ble();

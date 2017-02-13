@@ -27,8 +27,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,9 +39,11 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     private static final String ACCESS_FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final int REQUEST_INIT_SDK = 0;
 
+    public static final String ACTION_INIT_SDK = "initSDK";
     public static final String ACTION_ADD_ONYX_BEACONS_LISTENER = "addOnyxBeaconsListener";
     public static final String ACTION_ADD_WEB_LISTENER = "addWebListener";
     public static final String ACTION_ADD_TAGS_LISTENER = "addTagsListener";
+    public static final String ACTION_SET_ERROR_LISTENER = "setErrorListener";
 
     private CallbackContext messageChannel;
     // OnyxBeacon SDK
@@ -59,11 +59,14 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     private Gson gson = new Gson();
     private Boolean isRequestingPermission = false;
 
+    private BleErrorListener mBleErrorListener;
+
+    public interface BleErrorListener {
+        void onError(int errorCode, Exception e);
+    }
+
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
-
-        Log.v(TAG, "initialized BLE=" );
-
         super.initialize(cordova, webView);
         instance = this;
         beaconManager = OnyxBeaconApplication.getOnyxBeaconManager(cordova.getActivity());
@@ -74,12 +77,10 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         mBleReceiver.setBleStateListener(this);
 
         BLE_INTENT_FILTER = cordova.getActivity().getPackageName() + ".scan";
-        Log.d("Ble","initialize scan intent filter = " + BLE_INTENT_FILTER);
         cordova.getActivity().registerReceiver(mBleReceiver, new IntentFilter(BLE_INTENT_FILTER));
         bleStateRegistered = true;
 
         CONTENT_INTENT_FILTER = cordova.getActivity().getPackageName() + ".content";
-        Log.d("Ble","initialize content intent filter = " + CONTENT_INTENT_FILTER);
         cordova.getActivity().registerReceiver(mContentReceiver, new IntentFilter(CONTENT_INTENT_FILTER));
         receiverRegistered = true;
     }
@@ -96,15 +97,22 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         messageChannel = callbackContext;
         Log.v(TAG, "action=" + action);
         try {
-            if (action.equals("initSDK")) {
-                enableLocation();
+            if (action.equalsIgnoreCase(ACTION_INIT_SDK)) {
+                cordova.getThreadPool().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        enableLocation();
+                    }
+                });
             } else if (action.equalsIgnoreCase(ACTION_ADD_ONYX_BEACONS_LISTENER)) {
                 addOnyxBeaconsListener(callbackContext);
             } else if (action.equalsIgnoreCase(ACTION_ADD_WEB_LISTENER)) {
                 addWebListener(callbackContext);
             } else if (action.equalsIgnoreCase(ACTION_ADD_TAGS_LISTENER)) {
                 addTagsListener(callbackContext);
-            } else if (action.equals("getTags")) {
+            } else if (action.equalsIgnoreCase(ACTION_SET_ERROR_LISTENER)) {
+                setBleErrorListener(callbackContext);
+            }  else if (action.equals("getTags")) {
                 beaconManager.getTags();
                 callbackContext.success("Success");
             } else if (action.equals("sendGenericUserProfile")) {
@@ -276,6 +284,18 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         }
     }
 
+    private void setBleErrorListener(final CallbackContext callbackContext) {
+        mBleErrorListener = new BleErrorListener() {
+            @Override
+            public void onError(int errorCode, Exception e) {
+                PluginResult result = new PluginResult(PluginResult.Status.OK, errorCode);
+                result.setKeepCallback(true);
+                callbackContext.sendPluginResult(result);
+            }
+        };
+
+    }
+
     private static HashMap<String, Object> jsonToMap(JSONObject json) throws JSONException {
         HashMap<String, Object> retMap = new HashMap<String, Object>();
 
@@ -322,12 +342,16 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     }
 
     private void enableLocation() {
-        if (hasPermission(ACCESS_FINE_LOCATION)) {
+        if (cordova.hasPermission(ACCESS_FINE_LOCATION)) {
             initSDK();
         } else {
-            String[] permissions = {ACCESS_FINE_LOCATION};
-            requestPermissions(REQUEST_INIT_SDK, permissions);
+            getPermission(REQUEST_INIT_SDK, ACCESS_FINE_LOCATION);
         }
+    }
+
+    protected void getPermission(int requestCode, String permission)
+    {
+        cordova.requestPermission(this, requestCode, permission);
     }
 
     private void initSDK() {
@@ -378,43 +402,6 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         }
     }
 
-    private boolean hasPermission(String action) {
-        try {
-            Method methodToFind = cordova.getClass().getMethod("hasPermission", String.class);
-            if (methodToFind != null) {
-                try {
-                    return (Boolean) methodToFind.invoke(cordova, action);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch(NoSuchMethodException e) {
-            // Probably SDK < 23 (MARSHMALLOW implmements fine-grained, user-controlled permissions).
-            return true;
-        }
-        return true;
-    }
-
-    private void requestPermissions(int requestCode, String[] action) {
-        try {
-            Method methodToFind = cordova.getClass().getMethod("requestPermissions", CordovaPlugin.class, int.class, String[].class);
-            if (methodToFind != null) {
-                try {
-                    methodToFind.invoke(cordova, this, requestCode, action);
-                    isRequestingPermission = true;
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch(NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
         isRequestingPermission = false;
         for (int r: grantResults) {
@@ -437,10 +424,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     }
 
     private void onError(int errorCode, Exception e) {
-        String js = String.format(
-                "window.cordova.plugins.Ble.onyxBeaconError('%d:%s');",
-                errorCode,e.getMessage());
-        webView.loadUrl("javascript:"+js);
+        if (mBleErrorListener!=null) mBleErrorListener.onError(errorCode, e);
     }
 
 
