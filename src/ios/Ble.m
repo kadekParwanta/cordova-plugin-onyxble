@@ -34,8 +34,42 @@ NSDictionary *preferences;
 
 - (void)pluginInitialize {
     _rangeBeaconsHandler = [self createRangeBeaconsHandler];
-    CDVConfigParser *parser = [[CDVConfigParser alloc] init];
-    preferences = parser.settings;
+    CDVConfigParser *delegate = [[CDVConfigParser alloc] init];
+    [self parseSettingsWithParser:delegate];
+    self.settings = delegate.settings;
+}
+
+-(void)parseSettingsWithParser:(NSObject<NSXMLParserDelegate>*) delegate
+{
+    NSString* path = [self configFilePath];
+    NSURL* url = [NSURL fileURLWithPath:path];
+    self.configParser = [[NSXMLParser alloc] initWithContentsOfURL:url];
+    if (self.configParser == nil) {
+        NSLog(@"Failed to initialize XML parser.");
+        return;
+    }
+    
+    [self.configParser setDelegate:((id <NSXMLParserDelegate>) delegate)];
+    [self.configParser parse];
+    
+}
+
+-(NSString*) configFilePath {
+    NSString* path = self.configFile ?: @"config.xml";
+    if (![path isAbsolutePath]) {
+        NSString* absolutePath = [[NSBundle mainBundle] pathForResource:path ofType:nil];
+        if (!absolutePath) {
+            NSAssert(NO, @"ERROR: %@ not found in the main bundle!", path);
+        }
+        path = absolutePath;
+    }
+    
+    if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
+        NSAssert(NO, @"ERROR: %@ does not exist. Please run cordova-ios/bin/cordova_plist_to_config_xml path/to/project.", path);
+        return nil;
+    }
+    
+    return path;
 }
 
 #pragma mark - Coupan View
@@ -401,34 +435,34 @@ NSDictionary *preferences;
 }
 
 -(void) initSDK:(CDVInvokedUrlCommand *)command {
-    NSString* SA_CLIENTID = [command.arguments objectAtIndex:0];
-    NSString* SA_SECRET = [command.arguments objectAtIndex:1];
-    NSString* clientIDPref = [preferences cordovaSettingForKey:@"com-cordova-ble-clientId"];
-    NSString* secretPref = [preferences cordovaSettingForKey:@"com-cordova-ble-secret"];
-    NSLog(@"initSDK clientIDPref = %@, secretPref=%@",clientIDPref, secretPref);
+    NSString* SA_CLIENTID = [self.settings cordovaSettingForKey:@"com-cordova-ble-clientId"];
+    NSString* SA_SECRET = [self.settings cordovaSettingForKey:@"com-cordova-ble-secret"];
     
-    if (![clientIDPref isEqualToString:@""] && clientIDPref.length > 0){
-        SA_CLIENTID = clientIDPref;
+    CDVPluginResult* pluginResult;
+    
+    if ([SA_CLIENTID isEqualToString:@""] || SA_CLIENTID.length <= 0){
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"empty client id"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
     }
     
-    if (![secretPref isEqualToString:@""] && secretPref.length > 0){
-        SA_SECRET = secretPref;
+    if ([SA_SECRET isEqualToString:@""] || SA_SECRET.length <= 0){
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"empty secret"];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
     }
     
-    
-    NSLog(@"initSDK SA_CLIENTID = %@, SA_SECRET=%@",SA_CLIENTID, SA_SECRET);
-    
-    
-    [[OnyxBeacon sharedInstance] requestAlwaysAuthorization];
-    [[OnyxBeacon sharedInstance] startServiceWithClientID:SA_CLIENTID secret:SA_SECRET];
-    [[OnyxBeacon sharedInstance] setContentDelegate:self];
-    [[OnyxBeacon sharedInstance] setDelegate:self];
-    
-    CDVPluginResult* pluginResult = [CDVPluginResult
-                                     resultWithStatus:CDVCommandStatus_OK
-                                     messageAsString: @"startServiceWithClientID Invoked"];
-    
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    [self.commandDelegate runInBackground:^{
+        [[OnyxBeacon sharedInstance] requestAlwaysAuthorization];
+        [[OnyxBeacon sharedInstance] startServiceWithClientID:SA_CLIENTID secret:SA_SECRET];
+        [[OnyxBeacon sharedInstance] setContentDelegate:self];
+        [[OnyxBeacon sharedInstance] setDelegate:self];
+        
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                         messageAsString: @"startServiceWithClientID Invoked"];
+        
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];  
     
 }
 

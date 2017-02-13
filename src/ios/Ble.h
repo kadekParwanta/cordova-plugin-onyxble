@@ -14,6 +14,10 @@
 
 @interface Ble : CDVPlugin<OnyxBeaconContentDelegate, OnyxBeaconDelegate>
 
+@property (nonatomic, readwrite, strong) NSMutableDictionary* settings;
+@property (nonatomic, readwrite, strong) NSXMLParser* configParser;
+@property (nonatomic, readwrite, strong) NSString* configFile;
+
 - (void) addWebListener:(CDVInvokedUrlCommand *)command;
 - (void) addOnyxBeaconsListener: (CDVInvokedUrlCommand*)command;
 - (void) initSDK: (CDVInvokedUrlCommand*)command;
