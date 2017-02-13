@@ -32,8 +32,8 @@ function Ble() { }
  * @param {Function} successCallback
  * @param {Function} errorCallback
  */
-Ble.prototype.initSDK = function (clientId, secret, success, fail) {
-    exec(success, fail, MODULE_NAME, 'initSDK', [clientId, secret]);
+Ble.prototype.initSDK = function (success, fail) {
+    exec(success, fail, MODULE_NAME, 'initSDK', []);
 };
 
 Ble.prototype.onWebRequested = function (success) {
@@ -67,7 +67,7 @@ if (cordova.platformId === 'android' || cordova.platformId === 'ios' || cordova.
     channel.waitForInitialization('onBlePluginReady');
 
     channel.onCordovaReady.subscribe(function () {
-        // me.initSDK("cd8d429b30f58c577f2bc0dbfd07d03b07de7d2f","ce7ada82d2b3917dd35520747bf6492b4f5e1d4c",function(success){
+        // me.initSDK(function(success){
         //     channel.onBlePluginReady.fire();
         // }, function(e){
         //     console.log('failed to init SDK');
