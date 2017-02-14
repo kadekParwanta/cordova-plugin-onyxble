@@ -65,7 +65,7 @@ Ble.prototype.onError = function (success) {
         throw "A callback must be provided";
     }
 
-    exec(success, function(){}, MODULE_NAME, 'addErrorListener', []);
+    exec(success, function(){}, MODULE_NAME, 'setErrorListener', []);
 }
 
 var me = new Ble();

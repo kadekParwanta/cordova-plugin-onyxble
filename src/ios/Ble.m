@@ -14,6 +14,7 @@
 @interface Ble ()
 
 @property (nonatomic, copy) void (^rangeBeaconsHandler)(NSArray *beacons, OBBeaconRegion *region);
+@property (nonatomic, copy) void (^errorHandler)(NSError *error);
 
 @end
 
@@ -21,6 +22,7 @@
 @implementation Ble
 
 NSMutableArray *rangeBeaconsListeners;
+NSString *errorCallbackId;
 NSDictionary *preferences;
 
 /*
@@ -34,6 +36,7 @@ NSDictionary *preferences;
 
 - (void)pluginInitialize {
     _rangeBeaconsHandler = [self createRangeBeaconsHandler];
+    _errorHandler = [self createErrorHandler];
     CDVConfigParser *delegate = [[CDVConfigParser alloc] init];
     [self parseSettingsWithParser:delegate];
     self.settings = delegate.settings;
@@ -108,6 +111,10 @@ NSDictionary *preferences;
     [[AFNetworkActivityLogger sharedLogger] startLogging];
 }
 
+-(void)setErrorListener:(CDVInvokedUrlCommand *)command {
+    errorCallbackId = command.callbackId;
+}
+
 -(void (^)(NSArray *beacons, OBBeaconRegion *region)) createRangeBeaconsHandler {
     return ^(NSArray *beacons, OBBeaconRegion *region) {
         NSMutableArray * results = [[NSMutableArray alloc] init];
@@ -125,6 +132,14 @@ NSDictionary *preferences;
         for (NSString *callbackId in rangeBeaconsListeners) {
             [self.commandDelegate sendPluginResult:result callbackId:callbackId];
         }
+    };
+}
+
+-(void (^)(NSError *error)) createErrorHandler {
+    return ^(NSError *error) {
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:error.localizedDescription];
+        [result setKeepCallbackAsBool:YES];
+        if (errorCallbackId.length > 0) [self.commandDelegate sendPluginResult:result callbackId:errorCallbackId];
     };
 }
 
@@ -388,10 +403,7 @@ NSDictionary *preferences;
 
 
 - (void)onyxBeaconError:(NSError *)error {
-    NSString* jsString = nil;
-    jsString = [NSString stringWithFormat:@"%@(\"%@\");", @"window.cordova.plugins.Ble.onyxBeaconError", error];
-    [self.commandDelegate evalJs:jsString];
-    
+    _errorHandler(error);
 }
 
 

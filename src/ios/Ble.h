@@ -20,6 +20,7 @@
 
 - (void) addWebListener:(CDVInvokedUrlCommand *)command;
 - (void) addOnyxBeaconsListener: (CDVInvokedUrlCommand*)command;
+- (void) setErrorListener:(CDVInvokedUrlCommand *)command;
 - (void) initSDK: (CDVInvokedUrlCommand*)command;
 
 @end
