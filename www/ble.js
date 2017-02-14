@@ -68,6 +68,14 @@ Ble.prototype.onError = function (success) {
     exec(success, function(){}, MODULE_NAME, 'setErrorListener', []);
 }
 
+Ble.prototype.stop = function (success) {
+    if (typeof (success) !== 'function') {
+        throw "A callback must be provided";
+    }
+
+    exec(success, function(){}, MODULE_NAME, 'stop', []);
+}
+
 var me = new Ble();
 
 if (cordova.platformId === 'android' || cordova.platformId === 'ios' || cordova.platformId === 'windowsphone') {

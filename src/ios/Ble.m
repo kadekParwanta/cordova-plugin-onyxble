@@ -97,18 +97,20 @@ NSDictionary *preferences;
 }
 
 -(void) addWebListener:(CDVInvokedUrlCommand *)command {
-    [[OnyxBeacon sharedInstance] setLogger:^(NSString *message) {
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:message];
-        [result setKeepCallbackAsBool:YES];
-        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+    [self.commandDelegate runInBackground:^{
+        [[OnyxBeacon sharedInstance] setLogger:^(NSString *message) {
+            CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:message];
+            [result setKeepCallbackAsBool:YES];
+            [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+        }];
+        [[AFNetworkActivityLogger sharedLogger] setLoggerBlock:^(NSString *message) {
+            CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:message];
+            [result setKeepCallbackAsBool:YES];
+            [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+        }];
+        [[AFNetworkActivityLogger sharedLogger] setLevel:AFLoggerLevelDebug];
+        [[AFNetworkActivityLogger sharedLogger] startLogging];
     }];
-    [[AFNetworkActivityLogger sharedLogger] setLoggerBlock:^(NSString *message) {
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:message];
-        [result setKeepCallbackAsBool:YES];
-        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
-    }];
-    [[AFNetworkActivityLogger sharedLogger] setLevel:AFLoggerLevelDebug];
-    [[AFNetworkActivityLogger sharedLogger] startLogging];
 }
 
 -(void)setErrorListener:(CDVInvokedUrlCommand *)command {
@@ -341,9 +343,6 @@ NSDictionary *preferences;
 }
 
 
-
-
-
 - (void)sendPushNotificationProviderDeviceToken : (CDVInvokedUrlCommand *)command {
     NSString* token = [command.arguments objectAtIndex:0] ;
     
@@ -389,61 +388,8 @@ NSDictionary *preferences;
     
 }
 
-- (void)requestWhenInUseAuthorization:(CDVInvokedUrlCommand *)command
-{
-    return [[OnyxBeacon sharedInstance] requestWhenInUseAuthorization];
-    CDVPluginResult* pluginResult = [CDVPluginResult
-                                     resultWithStatus:CDVCommandStatus_OK
-                                     messageAsString: @"requestWhenInUseAuthorization Invoked"];
-    
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
-}
-
-
-
 - (void)onyxBeaconError:(NSError *)error {
     _errorHandler(error);
-}
-
-
-
--(void) requestAlwaysAuthorization :(CDVInvokedUrlCommand *)command {
-    [[OnyxBeacon sharedInstance] requestAlwaysAuthorization];
-    
-    CDVPluginResult* pluginResult = [CDVPluginResult
-                                     resultWithStatus:CDVCommandStatus_OK
-                                     messageAsString: @"requestAlwaysAuthorization Invoked"];
-    
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-}
-
--(void) resetService:(CDVInvokedUrlCommand *)command {
-    
-    [[OnyxBeacon sharedInstance] resetService];
-    
-    
-    CDVPluginResult* pluginResult = [CDVPluginResult
-                                     resultWithStatus:CDVCommandStatus_OK
-                                     messageAsString: @"resetService Invoked"];
-    
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
-}
-
--(void) setLogger:(CDVInvokedUrlCommand *)command {
-    
-    [[OnyxBeacon sharedInstance] setLogger:^(NSString *message) {
-        
-    }];
-    
-    
-    CDVPluginResult* pluginResult = [CDVPluginResult
-                                     resultWithStatus:CDVCommandStatus_OK
-                                     messageAsString: @"setLogger Invoked"];
-    
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    
 }
 
 -(void) initSDK:(CDVInvokedUrlCommand *)command {
@@ -475,6 +421,19 @@ NSDictionary *preferences;
         
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }];  
+    
+}
+
+-(void) stop:(CDVInvokedUrlCommand *)command {
+    
+    [[OnyxBeacon sharedInstance] resetService];
+    
+    
+    CDVPluginResult* pluginResult = [CDVPluginResult
+                                     resultWithStatus:CDVCommandStatus_OK
+                                     messageAsString: @"resetService Invoked"];
+    
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     
 }
 
