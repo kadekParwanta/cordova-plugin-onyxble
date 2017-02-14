@@ -40,6 +40,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     private static final int REQUEST_INIT_SDK = 0;
 
     public static final String ACTION_INIT_SDK = "initSDK";
+    public static final String ACTION_STOP_SCAN = "stop";
     public static final String ACTION_ADD_ONYX_BEACONS_LISTENER = "addOnyxBeaconsListener";
     public static final String ACTION_ADD_WEB_LISTENER = "addWebListener";
     public static final String ACTION_ADD_TAGS_LISTENER = "addTagsListener";
@@ -112,6 +113,8 @@ public class Ble extends CordovaPlugin implements BleStateListener {
                 addTagsListener(callbackContext);
             } else if (action.equalsIgnoreCase(ACTION_SET_ERROR_LISTENER)) {
                 setBleErrorListener(callbackContext);
+            } else if (action.equalsIgnoreCase(ACTION_STOP_SCAN)) {
+                beaconManager.stopScan();
             }  else if (action.equals("getTags")) {
                 beaconManager.getTags();
                 callbackContext.success("Success");
@@ -395,6 +398,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
             } else {
                 // Enable scanner in foreground mode and register receiver
                 beaconManager.setForegroundMode(true);
+                beaconManager.startScan();
                 PluginResult result = new PluginResult(PluginResult.Status.OK,"Success");
                 result.setKeepCallback(true);
                 messageChannel.sendPluginResult(result);
