@@ -410,17 +410,17 @@ NSDictionary *preferences;
         return;
     }
     
-    [self.commandDelegate runInBackground:^{
+    // [self.commandDelegate runInBackground:^{
         [[OnyxBeacon sharedInstance] requestAlwaysAuthorization];
         [[OnyxBeacon sharedInstance] startServiceWithClientID:SA_CLIENTID secret:SA_SECRET];
         [[OnyxBeacon sharedInstance] setContentDelegate:self];
         [[OnyxBeacon sharedInstance] setDelegate:self];
         
-        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                          messageAsString: @"startServiceWithClientID Invoked"];
         
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    }];  
+    // }];  
     
 }
 
