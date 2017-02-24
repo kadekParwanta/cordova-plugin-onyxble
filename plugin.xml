@@ -92,6 +92,20 @@
             <string>SampleApp requires location services to detect beacons around you</string>
         </config-file>
 
+        <config-file target="*-Info.plist" parent="UIBackgroundModes">
+            <array>
+		        <string>bluetooth-central</string>
+		        <string>fetch</string>
+	        </array>
+        </config-file>
+
+        <config-file target="*-Info.plist" parent="UIRequiredDeviceCapabilities">
+            <array>
+		        <string>armv7</string>
+		        <string>bluetooth-le</string>
+	        </array>
+        </config-file>
+
         <header-file src="src/ios/Ble.h"/>
         <source-file src="src/ios/Ble.m"/>
         <framework src="Foundation.framework"/>

@@ -76,6 +76,22 @@ Ble.prototype.stop = function (success) {
     exec(success, function(){}, MODULE_NAME, 'stop', []);
 }
 
+Ble.prototype.enterForeground = function (success) {
+    if (typeof (success) !== 'function') {
+        throw "A callback must be provided";
+    }
+
+    exec(success, function(){}, MODULE_NAME, 'enterForeground', []);
+}
+
+Ble.prototype.enterBackground = function (success) {
+    if (typeof (success) !== 'function') {
+        throw "A callback must be provided";
+    }
+
+    exec(success, function(){}, MODULE_NAME, 'enterBackground', []);
+}
+
 var me = new Ble();
 
 if (cordova.platformId === 'android' || cordova.platformId === 'ios' || cordova.platformId === 'windowsphone') {

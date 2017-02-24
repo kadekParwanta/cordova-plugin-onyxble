@@ -120,13 +120,57 @@ NSDictionary *preferences;
 -(void (^)(NSArray *beacons, OBBeaconRegion *region)) createRangeBeaconsHandler {
     return ^(NSArray *beacons, OBBeaconRegion *region) {
         NSMutableArray * results = [[NSMutableArray alloc] init];
-        for ( int i = 0, size = beacons.count; i< size; i++) {
-            OBBeacon* beacon = [beacons objectAtIndex:i];
+        for ( int i = 0, size = (int) beacons.count; i< size; i++) {
+            NSMutableDictionary* beacon = [beacons objectAtIndex:i];
             NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
-            [dict setValue:beacon.major forKey:@"major"];
-            [dict setValue:beacon.minor forKey:@"minor"];
-            [dict setValue:[NSNumber numberWithInteger:beacon.rssi] forKey:@"rssi"];
-            [dict setValue:[NSNumber numberWithInteger:beacon.proximity] forKey:@"proximity"];
+            [dict setValue:[NSString stringWithFormat:@"%@", region.UUID] forKey:@"proximityUuid"];
+            
+//            [dict setValue:[beacon valueForKey:@"uuid"] forKey:@"uuid"];
+            [dict setValue:[beacon valueForKey:@"major"] forKey:@"major"];
+            [dict setValue:[beacon valueForKey:@"minor"] forKey:@"minor"];
+//            [dict setValue:[beacon valueForKey:@"broadcastingScheme"] forKey:@"broadcastingScheme"];
+//            [dict setValue:[beacon valueForKey:@"lastProximity"] forKey:@"lastProximity"];
+//            [dict setValue:[beacon valueForKey:@"rangedTime"] forKey:@"rangedTime"];
+//            [dict setValue:[beacon valueForKey:@"lastSeen"] forKey:@"lastSeen"];
+            [dict setValue:[beacon valueForKey:@"umm"] forKey:@"umm"];
+            [dict setValue:[beacon valueForKey:@"rssi"] forKey:@"rssi"];
+            [dict setValue:[beacon valueForKey:@"proximity"] forKey:@"proximity"];
+//            [dict setValue:[beacon valueForKey:@"tags"] forKey:@"tags"];
+//            [dict setValue:[beacon valueForKey:@"unknownTimer"] forKey:@"unknownTimer"];
+//            [dict setValue:[beacon valueForKey:@"lastUpdated"] forKey:@"lastUpdated"];
+//            [dict setValue:[beacon valueForKey:@"lastChanged"] forKey:@"lastChanged"];
+//            [dict setValue:[beacon valueForKey:@"timeLocationMetrics"] forKey:@"timeLocationMetrics"];
+            [dict setValue:[beacon valueForKey:@"eddystoneNamespaceID"] forKey:@"eddystoneNamespaceID"];
+            [dict setValue:[beacon valueForKey:@"eddystoneInstanceID"] forKey:@"eddystoneInstanceID"];
+            [dict setValue:[beacon valueForKey:@"eddystoneURL"] forKey:@"eddystoneURL"];
+            [dict setValue:[beacon valueForKey:@"power"] forKey:@"power"];
+            [dict setValue:[beacon valueForKey:@"telemetry"] forKey:@"telemetry"];
+            [dict setValue:[beacon valueForKey:@"accuracy"] forKey:@"accuracy"];
+            
+            
+            [dict setValue:[beacon valueForKey:@"beaconId"] forKey:@"beaconId"];
+            [dict setValue:[beacon valueForKey:@"name"] forKey:@"name"];
+            [dict setValue:[beacon valueForKey:@"device_name"] forKey:@"device_name"];
+            [dict setValue:[beacon valueForKey:@"batt"] forKey:@"batt"];
+            [dict setValue:[beacon valueForKey:@"abdescription"] forKey:@"abdescription"];
+            [dict setValue:[beacon valueForKey:@"lat"] forKey:@"lat"];
+            [dict setValue:[beacon valueForKey:@"lng"] forKey:@"lng"];
+            [dict setValue:[beacon valueForKey:@"locationId"] forKey:@"locationId"];
+//            [dict setValue:[beacon valueForKey:@"location"] forKey:@"location"];
+//            [dict setValue:[beacon valueForKey:@"range"] forKey:@"range"];
+//            [dict setValue:[beacon valueForKey:@"freq"] forKey:@"freq"];
+//            [dict setValue:[beacon valueForKey:@"fwver"] forKey:@"fwver"];
+//            [dict setValue:[beacon valueForKey:@"hwver"] forKey:@"hwver"];
+//            [dict setValue:[beacon valueForKey:@"sysid"] forKey:@"sysid"];
+//            [dict setValue:[beacon valueForKey:@"encrypted"] forKey:@"encrypted"];
+//            [dict setValue:[beacon valueForKey:@"rev"] forKey:@"rev"];
+//            [dict setValue:[beacon valueForKey:@"sync_required"] forKey:@"sync_required"];
+//            [dict setValue:[beacon valueForKey:@"have_new_config"] forKey:@"have_new_config"];
+//            [dict setValue:[beacon valueForKey:@"tlm_sync_required"] forKey:@"tlm_sync_required"];
+//            [dict setValue:[beacon valueForKey:@"config_uuid"] forKey:@"config_uuid"];
+//            [dict setValue:[beacon valueForKey:@"config_major"] forKey:@"config_major"];
+//            [dict setValue:[beacon valueForKey:@"lastRefreshed"] forKey:@"lastRefreshed"];
+//            [dict setValue:[beacon valueForKey:@"refreshRate"] forKey:@"refreshRate"];
             [results addObject:dict];
         }
         CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:results];
@@ -410,7 +454,7 @@ NSDictionary *preferences;
         return;
     }
     
-    // [self.commandDelegate runInBackground:^{
+// [self.commandDelegate runInBackground:^{
         [[OnyxBeacon sharedInstance] requestAlwaysAuthorization];
         [[OnyxBeacon sharedInstance] startServiceWithClientID:SA_CLIENTID secret:SA_SECRET];
         [[OnyxBeacon sharedInstance] setContentDelegate:self];
@@ -420,7 +464,7 @@ NSDictionary *preferences;
                                          messageAsString: @"startServiceWithClientID Invoked"];
         
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    // }];  
+// }];  
     
 }
 
@@ -438,7 +482,7 @@ NSDictionary *preferences;
 }
 
 
-- (void)applicationDidEnterBackground:(CDVInvokedUrlCommand *)command
+- (void)enterBackground:(CDVInvokedUrlCommand *)command
 {
     [[OnyxBeacon sharedInstance] didEnterBackground];
     
@@ -450,7 +494,7 @@ NSDictionary *preferences;
 }
 
 
-- (void)applicationWillEnterForeground:(CDVInvokedUrlCommand *)command
+- (void)enterForeground:(CDVInvokedUrlCommand *)command
 {
     [[OnyxBeacon sharedInstance] willEnterForeground];
     
