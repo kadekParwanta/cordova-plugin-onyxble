@@ -113,7 +113,7 @@ Ble.prototype.getDeliveredCoupons = function (success) {
         throw "A callback must be provided";
     }
     
-    exec(function(){}, function(){}, MODULE_NAME, 'getDeliveredCoupons', []);
+    exec(success, function(){}, MODULE_NAME, 'getDeliveredCoupons', []);
 }
 
 var me = new Ble();

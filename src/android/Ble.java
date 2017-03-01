@@ -246,7 +246,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
 
     private void getDeliveredCoupons(CallbackContext callbackContext) {
         beaconManager.getDeliveredCoupons();
-        callbackContext.success("Success");
+        callbackContext.success("getDeliveredCoupons is invoked");
     }
 
     private OnyxCouponsListener mOnyxCouponListener = new OnyxCouponsListener() {
