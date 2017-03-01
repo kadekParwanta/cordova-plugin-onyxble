@@ -11,12 +11,15 @@ import com.google.gson.Gson;
 import com.onyxbeacon.OnyxBeaconApplication;
 import com.onyxbeacon.OnyxBeaconManager;
 import com.onyxbeacon.listeners.OnyxBeaconsListener;
+import com.onyxbeacon.listeners.OnyxCouponsListener;
 import com.onyxbeacon.listeners.OnyxTagsListener;
 import com.onyxbeacon.rest.auth.util.AuthData;
 import com.onyxbeacon.rest.auth.util.AuthenticationMode;
+import com.onyxbeacon.rest.model.content.Coupon;
 import com.onyxbeacon.rest.model.content.Tag;
 import com.onyxbeacon.service.logging.LoggingStrategy;
 import com.onyxbeaconservice.Beacon;
+import com.onyxbeaconservice.IBeacon;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -39,12 +42,15 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     private static final String ACCESS_FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final int REQUEST_INIT_SDK = 0;
 
-    public static final String ACTION_INIT_SDK = "initSDK";
-    public static final String ACTION_STOP_SCAN = "stop";
-    public static final String ACTION_ADD_ONYX_BEACONS_LISTENER = "addOnyxBeaconsListener";
-    public static final String ACTION_ADD_WEB_LISTENER = "addWebListener";
-    public static final String ACTION_ADD_TAGS_LISTENER = "addTagsListener";
-    public static final String ACTION_SET_ERROR_LISTENER = "setErrorListener";
+    private static final String ACTION_INIT_SDK = "initSDK";
+    private static final String ACTION_STOP_SCAN = "stop";
+    private static final String ACTION_ADD_ONYX_BEACONS_LISTENER = "addOnyxBeaconsListener";
+    private static final String ACTION_ADD_WEB_LISTENER = "addWebListener";
+    private static final String ACTION_ADD_TAGS_LISTENER = "addTagsListener";
+    private static final String ACTION_ADD_COUPON_LISTENER = "addCouponsListener";
+    private static final String ACTION_ADD_DELIVERED_COUPON_LISTENER = "addDeliveredCouponsListener";
+    private static final String ACTION_GET_DELIVERED_COUPONS = "getDeliveredCoupons";
+    private static final String ACTION_SET_ERROR_LISTENER = "setErrorListener";
     public static final String ACTION_ENTER_BACKGROUND = "enterBackground";
     public static final String ACTION_ENTER_FOREGROUND = "enterForeground";
 
@@ -52,7 +58,6 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     // OnyxBeacon SDK
     private OnyxBeaconManager beaconManager;
     private String CONTENT_INTENT_FILTER;
-    private String BLE_INTENT_FILTER;
     private ContentReceiver mContentReceiver;
     private BleStateReceiver mBleReceiver;
     private boolean receiverRegistered = false;
@@ -60,11 +65,12 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     private boolean sendfalse;
     private Ble instance;
     private Gson gson = new Gson();
-    private Boolean isRequestingPermission = false;
 
     private BleErrorListener mBleErrorListener;
+    private ArrayList<CallbackContext> mCouponReceivers = new ArrayList<CallbackContext>();
+    private ArrayList<CallbackContext> mDeliveredCouponReceivers = new ArrayList<CallbackContext>();
 
-    public interface BleErrorListener {
+    interface BleErrorListener {
         void onError(int errorCode, Exception e);
     }
 
@@ -75,11 +81,12 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         beaconManager = OnyxBeaconApplication.getOnyxBeaconManager(cordova.getActivity());
 
         mContentReceiver = ContentReceiver.getInstance();
+        mContentReceiver.setOnyxCouponsListener(mOnyxCouponListener);
         //Register for BLE events
         mBleReceiver = BleStateReceiver.getInstance();
         mBleReceiver.setBleStateListener(this);
 
-        BLE_INTENT_FILTER = cordova.getActivity().getPackageName() + ".scan";
+        String BLE_INTENT_FILTER = cordova.getActivity().getPackageName() + ".scan";
         cordova.getActivity().registerReceiver(mBleReceiver, new IntentFilter(BLE_INTENT_FILTER));
         bleStateRegistered = true;
 
@@ -101,12 +108,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         Log.v(TAG, "action=" + action);
         try {
             if (action.equalsIgnoreCase(ACTION_INIT_SDK)) {
-                cordova.getThreadPool().execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        enableLocation();
-                    }
-                });
+                enableLocation();
             } else if (action.equalsIgnoreCase(ACTION_ADD_ONYX_BEACONS_LISTENER)) {
                 addOnyxBeaconsListener(callbackContext);
             } else if (action.equalsIgnoreCase(ACTION_ADD_WEB_LISTENER)) {
@@ -121,6 +123,12 @@ public class Ble extends CordovaPlugin implements BleStateListener {
                 enterBackground();
             }  else if (action.equalsIgnoreCase(ACTION_ENTER_FOREGROUND)) {
                 enterForeground();
+            } else if (action.equalsIgnoreCase(ACTION_ADD_COUPON_LISTENER)) {
+                addCouponReceiver(callbackContext);
+            }   else if (action.equalsIgnoreCase(ACTION_ADD_DELIVERED_COUPON_LISTENER)) {
+                addDeliveredCouponReceiver(callbackContext);
+            }   else if (action.equalsIgnoreCase(ACTION_GET_DELIVERED_COUPONS)) {
+                getDeliveredCoupons(callbackContext);
             }  else if (action.equals("getTags")) {
                 beaconManager.getTags();
                 callbackContext.success("Success");
@@ -234,6 +242,41 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         }
 
         return !sendfalse;
+    }
+
+    private void getDeliveredCoupons(CallbackContext callbackContext) {
+        beaconManager.getDeliveredCoupons();
+        callbackContext.success("Success");
+    }
+
+    private OnyxCouponsListener mOnyxCouponListener = new OnyxCouponsListener() {
+        @Override
+        public void onCouponReceived(Coupon coupon, IBeacon iBeacon) {
+            for (CallbackContext callbackContext : mCouponReceivers) {
+                PluginResult result = new PluginResult(PluginResult.Status.OK, gson.toJson(coupon));
+                result.setKeepCallback(true);
+                callbackContext.sendPluginResult(result);
+            }
+        }
+
+        @Override
+        public void onDeliveredCouponsReceived(ArrayList<Coupon> arrayList) {
+            for (CallbackContext callbackContext : mDeliveredCouponReceivers) {
+                PluginResult result = new PluginResult(PluginResult.Status.OK, gson.toJson(arrayList));
+                result.setKeepCallback(true);
+                callbackContext.sendPluginResult(result);
+            }
+        }
+    };
+
+    private void addCouponReceiver(CallbackContext callbackContext) {
+        mCouponReceivers.add(callbackContext);
+        callbackContext.success("Success");
+    }
+
+    private void addDeliveredCouponReceiver(CallbackContext callbackContext) {
+        mDeliveredCouponReceivers.add(callbackContext);
+        callbackContext.success("Success");
     }
 
     private void addTagsListener(final CallbackContext callbackContext) {
@@ -395,7 +438,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         }
     }
 
-    protected void getPermission(int requestCode, String permission)
+    private void getPermission(int requestCode, String permission)
     {
         cordova.requestPermission(this, requestCode, permission);
     }
@@ -449,8 +492,8 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         }
     }
 
+    @Override
     public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
-        isRequestingPermission = false;
         for (int r: grantResults) {
             if (r == PackageManager.PERMISSION_DENIED) {
                 if (requestCode == REQUEST_INIT_SDK) {

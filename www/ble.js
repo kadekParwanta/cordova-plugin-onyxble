@@ -85,11 +85,35 @@ Ble.prototype.enterForeground = function (success) {
 }
 
 Ble.prototype.enterBackground = function (success) {
-    if (typeof (success) !== 'function') {
+   if (typeof (success) !== 'function') {
         throw "A callback must be provided";
     }
 
     exec(success, function(){}, MODULE_NAME, 'enterBackground', []);
+}
+
+Ble.prototype.addCouponsListener = function (success) {
+    if (typeof (success) !== 'function') {
+        throw "A callback must be provided";
+    }
+
+    exec(success, function(){}, MODULE_NAME, 'addCouponsListener', []);
+}
+
+Ble.prototype.addDeliveredCouponsListener = function (success) {
+    if (typeof (success) !== 'function') {
+        throw "A callback must be provided";
+    }
+
+    exec(success, function(){}, MODULE_NAME, 'addDeliveredCouponsListener', []);
+}
+
+Ble.prototype.getDeliveredCoupons = function (success) {
+    if (typeof (success) !== 'function') {
+        throw "A callback must be provided";
+    }
+
+    exec(success, function(){}, MODULE_NAME, 'getDeliveredCoupons', []);
 }
 
 var me = new Ble();
