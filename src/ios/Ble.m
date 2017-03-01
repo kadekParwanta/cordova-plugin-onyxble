@@ -25,6 +25,7 @@
 NSMutableArray *rangeBeaconsListeners;
 NSMutableArray *couponsListeners;
 NSString *errorCallbackId;
+NSString *deliveredCallbackId;
 NSDictionary *preferences;
 
 /*
@@ -88,22 +89,25 @@ NSDictionary *preferences;
 }
 
 - (void)addDeliveredCouponsListener:(CDVInvokedUrlCommand *) command{
-    NSArray *coupons = [[OnyxBeacon sharedInstance] getContent];
-    
-    CDVPluginResult* pluginResult = [CDVPluginResult
-                                     resultWithStatus:CDVCommandStatus_OK
-                                     messageAsArray: coupons];
-    
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    deliveredCallbackId = command.callbackId;
 }
 
 - (void)getDeliveredCoupons:(CDVInvokedUrlCommand *) command{
-    // in android, the delivered coupons is retrieved asynchronously
     CDVPluginResult* pluginResult = [CDVPluginResult
                                      resultWithStatus:CDVCommandStatus_OK
                                      messageAsString:@"getDeliveredCoupon is invoked"];
     
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    
+    // in android, the delivered coupons is retrieved via broadcast receiver, while in iOS synchronously
+    
+    NSArray *coupons = [[OnyxBeacon sharedInstance] getContent];
+    
+    pluginResult = [CDVPluginResult
+                                     resultWithStatus:CDVCommandStatus_OK
+                                     messageAsArray: coupons];
+    
+    if (deliveredCallbackId.length > 0) [self.commandDelegate sendPluginResult:pluginResult callbackId:deliveredCallbackId];
 }
 
 
