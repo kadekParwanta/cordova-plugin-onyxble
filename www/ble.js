@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  *
-*/
+ */
 
 var exec = require('cordova/exec'),
-    cordova = require('cordova'),
-    channel = require('cordova/channel'),
-    utils = require('cordova/utils');
+cordova = require('cordova'),
+channel = require('cordova/channel'),
+utils = require('cordova/utils');
 
 var MODULE_NAME = 'Ble';
 
@@ -40,7 +40,7 @@ Ble.prototype.onWebRequested = function (success, fail) {
     if (typeof (success) !== 'function') {
         throw "A callback must be provided";
     }
-
+    
     exec(success, fail, MODULE_NAME, 'addWebListener', []);
 }
 
@@ -48,7 +48,7 @@ Ble.prototype.didRangeBeaconsInRegion = function (success, fail) {
     if (typeof (success) !== 'function') {
         throw "A callback must be provided";
     }
-
+    
     exec(success, fail, MODULE_NAME, 'addOnyxBeaconsListener', []);
 }
 
@@ -56,7 +56,7 @@ Ble.prototype.onTagsReceived = function (success, fail) {
     if (typeof (success) !== 'function') {
         throw "A callback must be provided";
     }
-
+    
     exec(success, fail, MODULE_NAME, 'addTagsListener', []);
 }
 
@@ -64,7 +64,7 @@ Ble.prototype.onError = function (success) {
     if (typeof (success) !== 'function') {
         throw "A callback must be provided";
     }
-
+    
     exec(success, function(){}, MODULE_NAME, 'setErrorListener', []);
 }
 
@@ -72,7 +72,7 @@ Ble.prototype.stop = function (success) {
     if (typeof (success) !== 'function') {
         throw "A callback must be provided";
     }
-
+    
     exec(success, function(){}, MODULE_NAME, 'stop', []);
 }
 
@@ -80,31 +80,31 @@ Ble.prototype.enterForeground = function (success) {
     if (typeof (success) !== 'function') {
         throw "A callback must be provided";
     }
-
+    
     exec(success, function(){}, MODULE_NAME, 'enterForeground', []);
 }
 
 Ble.prototype.enterBackground = function (success) {
-   if (typeof (success) !== 'function') {
+    if (typeof (success) !== 'function') {
         throw "A callback must be provided";
     }
-
+    
     exec(success, function(){}, MODULE_NAME, 'enterBackground', []);
 }
 
-Ble.prototype.addCouponsListener = function (success) {
+Ble.prototype.onCouponReceived = function (success) {
     if (typeof (success) !== 'function') {
         throw "A callback must be provided";
     }
-
+    
     exec(success, function(){}, MODULE_NAME, 'addCouponsListener', []);
 }
 
-Ble.prototype.addDeliveredCouponsListener = function (success) {
+Ble.prototype.onDeliveredCouponsReceived = function (success) {
     if (typeof (success) !== 'function') {
         throw "A callback must be provided";
     }
-
+    
     exec(success, function(){}, MODULE_NAME, 'addDeliveredCouponsListener', []);
 }
 
@@ -112,8 +112,8 @@ Ble.prototype.getDeliveredCoupons = function (success) {
     if (typeof (success) !== 'function') {
         throw "A callback must be provided";
     }
-
-    exec(success, function(){}, MODULE_NAME, 'getDeliveredCoupons', []);
+    
+    exec(function(){}, function(){}, MODULE_NAME, 'getDeliveredCoupons', []);
 }
 
 var me = new Ble();
@@ -121,16 +121,16 @@ var me = new Ble();
 if (cordova.platformId === 'android' || cordova.platformId === 'ios' || cordova.platformId === 'windowsphone') {
     channel.createSticky('onBlePluginReady');
     channel.waitForInitialization('onBlePluginReady');
-
+    
     channel.onCordovaReady.subscribe(function () {
-        // me.initSDK(function(success){
-        //     channel.onBlePluginReady.fire();
-        // }, function(e){
-        //     console.log('failed to init SDK');
-        //     channel.onBlePluginReady.fire();
-        // })
-        channel.onBlePluginReady.fire();
-    });
+                                     // me.initSDK(function(success){
+                                     //     channel.onBlePluginReady.fire();
+                                     // }, function(e){
+                                     //     console.log('failed to init SDK');
+                                     //     channel.onBlePluginReady.fire();
+                                     // })
+                                     channel.onBlePluginReady.fire();
+                                     });
 }
 
 module.exports = me;

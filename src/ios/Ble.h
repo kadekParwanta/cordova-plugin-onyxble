@@ -20,8 +20,13 @@
 
 - (void) addWebListener:(CDVInvokedUrlCommand *)command;
 - (void) addOnyxBeaconsListener: (CDVInvokedUrlCommand*)command;
+- (void) addCouponsListener:(CDVInvokedUrlCommand *) command;
+- (void) addDeliveredCouponsListener:(CDVInvokedUrlCommand *) command;
+- (void) getDeliveredCoupons:(CDVInvokedUrlCommand *) command;
 - (void) setErrorListener:(CDVInvokedUrlCommand *)command;
 - (void) initSDK: (CDVInvokedUrlCommand*)command;
 - (void) stop:(CDVInvokedUrlCommand *)command;
+- (void) enterBackground:(CDVInvokedUrlCommand *)command;
+- (void) enterForeground:(CDVInvokedUrlCommand *)command;
 
 @end

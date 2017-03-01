@@ -15,6 +15,7 @@
 
 @property (nonatomic, copy) void (^rangeBeaconsHandler)(NSArray *beacons, OBBeaconRegion *region);
 @property (nonatomic, copy) void (^errorHandler)(NSError *error);
+@property (nonatomic, copy) void (^couponHandler)(NSArray *coupons);
 
 @end
 
@@ -22,6 +23,7 @@
 @implementation Ble
 
 NSMutableArray *rangeBeaconsListeners;
+NSMutableArray *couponsListeners;
 NSString *errorCallbackId;
 NSDictionary *preferences;
 
@@ -37,6 +39,7 @@ NSDictionary *preferences;
 - (void)pluginInitialize {
     _rangeBeaconsHandler = [self createRangeBeaconsHandler];
     _errorHandler = [self createErrorHandler];
+    _couponHandler = [self createCouponHandler];
     CDVConfigParser *delegate = [[CDVConfigParser alloc] init];
     [self parseSettingsWithParser:delegate];
     self.settings = delegate.settings;
@@ -77,13 +80,28 @@ NSDictionary *preferences;
 
 #pragma mark - Coupan View
 
-- (void)getContent:(CDVInvokedUrlCommand *)command{
-    
+- (void)addCouponsListener:(CDVInvokedUrlCommand *) command{
+    if (couponsListeners == nil) {
+        couponsListeners = [[NSMutableArray alloc] init];
+    }
+    [couponsListeners addObject:command.callbackId];
+}
+
+- (void)addDeliveredCouponsListener:(CDVInvokedUrlCommand *) command{
     NSArray *coupons = [[OnyxBeacon sharedInstance] getContent];
     
     CDVPluginResult* pluginResult = [CDVPluginResult
                                      resultWithStatus:CDVCommandStatus_OK
                                      messageAsArray: coupons];
+    
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void)getDeliveredCoupons:(CDVInvokedUrlCommand *) command{
+    // in android, the delivered coupons is retrieved asynchronously
+    CDVPluginResult* pluginResult = [CDVPluginResult
+                                     resultWithStatus:CDVCommandStatus_OK
+                                     messageAsString:@"getDeliveredCoupon is invoked"];
     
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
@@ -189,11 +207,20 @@ NSDictionary *preferences;
     };
 }
 
+-(void (^)(NSArray *coupons)) createCouponHandler {
+    return ^(NSArray *coupons) {
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:coupons];
+        [result setKeepCallbackAsBool:YES];
+        for (NSString *callbackId in couponsListeners) {
+            [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+        }
+    };
+}
+
 #pragma mark - OnyxBeaconCouponDelegate Methods
 - (void)didRangeBeacons:(NSArray *)beacons inRegion:(OBBeaconRegion *)region {
     _rangeBeaconsHandler(beacons, region);
 }
-
 
 - (void)locationManagerDidEnterRegion:(CLRegion *)region{
 
@@ -203,9 +230,6 @@ NSDictionary *preferences;
     
 }
 
-
-
-
 - (void)locationManagerDidExitRegion:(CLRegion *)region{
     
     NSString* jsString = nil;
@@ -214,25 +238,8 @@ NSDictionary *preferences;
     
 }
 
-
-
-
-
 - (void)didReceiveContent:(NSArray *)coupons {
-    /*
-     for (OBContent *coupon in coupons) {
-     UILocalNotification *notification = [[UILocalNotification alloc] init];
-     notification.alertBody = coupon.message;
-     notification.userInfo = @{@"uuid": coupon.uuid};
-     notification.soundName = UILocalNotificationDefaultSoundName;
-     [[UIApplication sharedApplication] presentLocalNotificationNow:notification];
-     }
-     */
-    //Send Coupan to Cordova
-    
-    NSString* jsString = nil;
-    jsString = [NSString stringWithFormat:@"%@(\"%@\");", @"window.cordova.plugins.Ble.didReceiveContent", coupons];
-    [self.commandDelegate evalJs:jsString];
+    _couponHandler(coupons);
 }
 
 - (void)didRequestInfo:(OBContent *)content inViewController:(UIViewController *)viewController {
@@ -281,8 +288,6 @@ NSDictionary *preferences;
     
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
-
-
 
 - (void)setTags:(CDVInvokedUrlCommand *)command {
     
