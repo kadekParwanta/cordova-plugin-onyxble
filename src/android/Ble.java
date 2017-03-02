@@ -3,6 +3,7 @@ package com.cordova.ble;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
+import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.util.Log;
@@ -53,7 +54,8 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     private static final String ACTION_SET_ERROR_LISTENER = "setErrorListener";
     public static final String ACTION_ENTER_BACKGROUND = "enterBackground";
     public static final String ACTION_ENTER_FOREGROUND = "enterForeground";
-    
+    public static final String ACTION_SHOW_COUPON = "showCoupon";
+
     private CallbackContext messageChannel;
     // OnyxBeacon SDK
     private OnyxBeaconManager beaconManager;
@@ -129,6 +131,8 @@ public class Ble extends CordovaPlugin implements BleStateListener {
                 addDeliveredCouponReceiver(callbackContext);
             }   else if (action.equalsIgnoreCase(ACTION_GET_DELIVERED_COUPONS)) {
                 getDeliveredCoupons(callbackContext);
+            }   else if (action.equalsIgnoreCase(ACTION_SHOW_COUPON)) {
+                showCoupon(args, callbackContext);
             }  else if (action.equals("getTags")) {
                 beaconManager.getTags();
                 callbackContext.success("Success");
@@ -244,6 +248,19 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         return !sendfalse;
     }
 
+    private void showCoupon(JSONArray args, CallbackContext callbackContext) {
+        Context context = this.cordova.getActivity();
+        Gson gson = new Gson();
+        try {
+            Coupon coupon = gson.fromJson(args.getJSONObject(0).toString(), Coupon.class);
+            OnyxBeaconApplication.startCouponDetailActivity(context, coupon);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        callbackContext.success("showCoupon is invoked");
+    }
+
     private void getDeliveredCoupons(CallbackContext callbackContext) {
         beaconManager.getDeliveredCoupons();
         callbackContext.success("getDeliveredCoupons is invoked");
@@ -348,7 +365,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         };
 
     }
-    
+
     private void enterBackground() {
         beaconManager.setForegroundMode(false);
         // Unregister content receiver

@@ -116,6 +116,14 @@ Ble.prototype.getDeliveredCoupons = function (success) {
     exec(success, function(){}, MODULE_NAME, 'getDeliveredCoupons', []);
 }
 
+Ble.prototype.showCoupon = function (success, coupon) {
+    if (typeof (success) !== 'function') {
+        throw "A callback must be provided";
+    }
+    
+    exec(success, function(){}, MODULE_NAME, 'showCoupon', [coupon]);
+}
+
 var me = new Ble();
 
 if (cordova.platformId === 'android' || cordova.platformId === 'ios' || cordova.platformId === 'windowsphone') {
