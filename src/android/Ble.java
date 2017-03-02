@@ -53,7 +53,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     private static final String ACTION_SET_ERROR_LISTENER = "setErrorListener";
     public static final String ACTION_ENTER_BACKGROUND = "enterBackground";
     public static final String ACTION_ENTER_FOREGROUND = "enterForeground";
-
+    
     private CallbackContext messageChannel;
     // OnyxBeacon SDK
     private OnyxBeaconManager beaconManager;
@@ -252,8 +252,11 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     private OnyxCouponsListener mOnyxCouponListener = new OnyxCouponsListener() {
         @Override
         public void onCouponReceived(Coupon coupon, IBeacon iBeacon) {
+            //create arraylist because the iOS SDK use an array.
+            ArrayList<Coupon> coupons = new ArrayList<Coupon>();
+            coupons.add(coupon);
             for (CallbackContext callbackContext : mCouponReceivers) {
-                PluginResult result = new PluginResult(PluginResult.Status.OK, gson.toJson(coupon));
+                PluginResult result = new PluginResult(PluginResult.Status.OK, gson.toJson(coupons));
                 result.setKeepCallback(true);
                 callbackContext.sendPluginResult(result);
             }
@@ -271,12 +274,10 @@ public class Ble extends CordovaPlugin implements BleStateListener {
 
     private void addCouponReceiver(CallbackContext callbackContext) {
         mCouponReceivers.add(callbackContext);
-        callbackContext.success("Success");
     }
 
     private void addDeliveredCouponReceiver(CallbackContext callbackContext) {
         mDeliveredCouponReceivers.add(callbackContext);
-        callbackContext.success("Success");
     }
 
     private void addTagsListener(final CallbackContext callbackContext) {
@@ -347,7 +348,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         };
 
     }
-
+    
     private void enterBackground() {
         beaconManager.setForegroundMode(false);
         // Unregister content receiver
