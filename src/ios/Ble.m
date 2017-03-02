@@ -93,13 +93,6 @@ NSDictionary *preferences;
         deliveredCouponsListeners = [[NSMutableArray alloc] init];
     }
     [deliveredCouponsListeners addObject:command.callbackId];
-    
-    //for testing
-    NSArray *coupons = [[OnyxBeacon sharedInstance] getContent];
-    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
-                                      messageAsArray: coupons];
-    [pluginResult setKeepCallbackAsBool:YES];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void)getDeliveredCoupons:(CDVInvokedUrlCommand *) command{
