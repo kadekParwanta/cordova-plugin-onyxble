@@ -150,22 +150,40 @@ NSDictionary *preferences;
         for ( int i = 0, size = (int) beacons.count; i< size; i++) {
             NSMutableDictionary* beacon = [beacons objectAtIndex:i];
             NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
-            [dict setValue:[NSString stringWithFormat:@"%@", region.UUID] forKey:@"proximityUuid"];
+            NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+            [dateFormatter setDateFormat:@"dd-MM-yyy HH:mm:ss ZZZ"];
             
-//            [dict setValue:[beacon valueForKey:@"uuid"] forKey:@"uuid"];
+            [dict setValue:[NSString stringWithFormat:@"%@", region.UUID] forKey:@"proximityUuid"];
+            [dict setValue:[NSString stringWithFormat:@"%@", [beacon valueForKey:@"uuid"]] forKey:@"uuid"];
             [dict setValue:[beacon valueForKey:@"major"] forKey:@"major"];
             [dict setValue:[beacon valueForKey:@"minor"] forKey:@"minor"];
-//            [dict setValue:[beacon valueForKey:@"broadcastingScheme"] forKey:@"broadcastingScheme"];
-//            [dict setValue:[beacon valueForKey:@"lastProximity"] forKey:@"lastProximity"];
-//            [dict setValue:[beacon valueForKey:@"rangedTime"] forKey:@"rangedTime"];
-//            [dict setValue:[beacon valueForKey:@"lastSeen"] forKey:@"lastSeen"];
+            [dict setValue:[beacon valueForKey:@"broadcastingScheme"] forKey:@"broadcastingScheme"];
+            [dict setValue:[beacon valueForKey:@"lastProximity"] forKey:@"lastProximity"];
+            
+            NSDate *rangedTime = [beacon valueForKey:@"rangedTime"];
+            [dict setValue:[dateFormatter stringFromDate:rangedTime] forKey:@"rangedTime"];
+            
+            NSDate *lastSeen = [beacon valueForKey:@"lastSeen"];
+            [dict setValue:[dateFormatter stringFromDate:lastSeen] forKey:@"lastSeen"];
             [dict setValue:[beacon valueForKey:@"umm"] forKey:@"umm"];
             [dict setValue:[beacon valueForKey:@"rssi"] forKey:@"rssi"];
             [dict setValue:[beacon valueForKey:@"proximity"] forKey:@"proximity"];
-//            [dict setValue:[beacon valueForKey:@"tags"] forKey:@"tags"];
-//            [dict setValue:[beacon valueForKey:@"unknownTimer"] forKey:@"unknownTimer"];
-//            [dict setValue:[beacon valueForKey:@"lastUpdated"] forKey:@"lastUpdated"];
-//            [dict setValue:[beacon valueForKey:@"lastChanged"] forKey:@"lastChanged"];
+            
+            NSSet *tags = [beacon valueForKey:@"tags"];
+            NSMutableArray *tagsArray = [[NSMutableArray alloc] init];
+            for (NSNumber* num in tags) {
+                [tagsArray addObject:num];
+            }
+            [dict setObject:tagsArray forKey:@"tags"];
+            
+            NSDate *unknownTimer = [beacon valueForKey:@"unknownTimer"];
+            [dict setValue:[dateFormatter stringFromDate:unknownTimer] forKey:@"unknownTimer"];
+            
+            NSDate *lastUpdated = [beacon valueForKey:@"lastUpdated"];
+            [dict setValue:[dateFormatter stringFromDate:lastUpdated] forKey:@"lastUpdated"];
+            NSDate *lastChanged = [beacon valueForKey:@"lastChanged"];
+            [dict setValue:[dateFormatter stringFromDate:lastChanged] forKey:@"lastChanged"];
+            
 //            [dict setValue:[beacon valueForKey:@"timeLocationMetrics"] forKey:@"timeLocationMetrics"];
             [dict setValue:[beacon valueForKey:@"eddystoneNamespaceID"] forKey:@"eddystoneNamespaceID"];
             [dict setValue:[beacon valueForKey:@"eddystoneInstanceID"] forKey:@"eddystoneInstanceID"];
@@ -183,21 +201,38 @@ NSDictionary *preferences;
             [dict setValue:[beacon valueForKey:@"lat"] forKey:@"lat"];
             [dict setValue:[beacon valueForKey:@"lng"] forKey:@"lng"];
             [dict setValue:[beacon valueForKey:@"locationId"] forKey:@"locationId"];
-//            [dict setValue:[beacon valueForKey:@"location"] forKey:@"location"];
-//            [dict setValue:[beacon valueForKey:@"range"] forKey:@"range"];
-//            [dict setValue:[beacon valueForKey:@"freq"] forKey:@"freq"];
-//            [dict setValue:[beacon valueForKey:@"fwver"] forKey:@"fwver"];
-//            [dict setValue:[beacon valueForKey:@"hwver"] forKey:@"hwver"];
-//            [dict setValue:[beacon valueForKey:@"sysid"] forKey:@"sysid"];
-//            [dict setValue:[beacon valueForKey:@"encrypted"] forKey:@"encrypted"];
-//            [dict setValue:[beacon valueForKey:@"rev"] forKey:@"rev"];
-//            [dict setValue:[beacon valueForKey:@"sync_required"] forKey:@"sync_required"];
-//            [dict setValue:[beacon valueForKey:@"have_new_config"] forKey:@"have_new_config"];
-//            [dict setValue:[beacon valueForKey:@"tlm_sync_required"] forKey:@"tlm_sync_required"];
-//            [dict setValue:[beacon valueForKey:@"config_uuid"] forKey:@"config_uuid"];
-//            [dict setValue:[beacon valueForKey:@"config_major"] forKey:@"config_major"];
-//            [dict setValue:[beacon valueForKey:@"lastRefreshed"] forKey:@"lastRefreshed"];
-//            [dict setValue:[beacon valueForKey:@"refreshRate"] forKey:@"refreshRate"];
+            
+            NSDictionary *beaconLocation = [beacon valueForKey:@"location"];
+            
+            NSMutableDictionary *location = [[NSMutableDictionary alloc] init];
+            [location setValue:[beaconLocation valueForKey:@"locationId"] forKey:@"locationId"];
+            [location setValue:[beaconLocation valueForKey:@"name"] forKey:@"name"];
+            [location setValue:[beaconLocation valueForKey:@"country"] forKey:@"country"];
+            [location setValue:[beaconLocation valueForKey:@"city"] forKey:@"city"];
+            [location setValue:[beaconLocation valueForKey:@"zip"] forKey:@"zip"];
+            [location setValue:[beaconLocation valueForKey:@"street"] forKey:@"street"];
+            [location setValue:[beaconLocation valueForKey:@"street_number"] forKey:@"street_number"];
+            [location setValue:[beaconLocation valueForKey:@"lat"] forKey:@"lat"];
+            [location setValue:[beaconLocation valueForKey:@"lng"] forKey:@"lng"];
+            [dict setObject:location forKey:@"location"];
+            
+            [dict setValue:[beacon valueForKey:@"range"] forKey:@"range"];
+            [dict setValue:[beacon valueForKey:@"freq"] forKey:@"freq"];
+            [dict setValue:[beacon valueForKey:@"fwver"] forKey:@"fwver"];
+            [dict setValue:[beacon valueForKey:@"hwver"] forKey:@"hwver"];
+            [dict setValue:[beacon valueForKey:@"sysid"] forKey:@"sysid"];
+            [dict setValue:[beacon valueForKey:@"encrypted"] forKey:@"encrypted"];
+            [dict setValue:[beacon valueForKey:@"rev"] forKey:@"rev"];
+            [dict setValue:[beacon valueForKey:@"sync_required"] forKey:@"sync_required"];
+            [dict setValue:[beacon valueForKey:@"have_new_config"] forKey:@"have_new_config"];
+            [dict setValue:[beacon valueForKey:@"tlm_sync_required"] forKey:@"tlm_sync_required"];
+            [dict setValue:[beacon valueForKey:@"config_uuid"] forKey:@"config_uuid"];
+            [dict setValue:[beacon valueForKey:@"config_major"] forKey:@"config_major"];
+            
+            NSDate *lastRefreshed = [beacon valueForKey:@"lastRefreshed"];
+            [dict setValue:[dateFormatter stringFromDate:lastRefreshed] forKey:@"lastRefreshed"];
+            
+            [dict setValue:[beacon valueForKey:@"refreshRate"] forKey:@"refreshRate"];
             [results addObject:dict];
         }
         CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:results];
@@ -219,21 +254,26 @@ NSDictionary *preferences;
 -(void (^)(NSArray *coupons)) createCouponHandler {
     return ^(NSArray *coupons) {
         NSMutableArray * results = [[NSMutableArray alloc] init];
+        NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+        [dateFormatter setDateFormat:@"dd-MM-yyy HH:mm:ss ZZZ"];
         for ( int i = 0, size = (int) coupons.count; i< size; i++) {
             NSMutableDictionary* coupon = [coupons objectAtIndex:i];
             NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
-            [dict setValue:[coupon valueForKey:@"title"] forKey:@"title"];
-            [dict setValue:[coupon valueForKey:@"uuid"] forKey:@"uuid"];
+            [dict setValue:[coupon valueForKey:@"title"] forKey:@"name"];
+            [dict setValue:[coupon valueForKey:@"uuid"] forKey:@"couponId"];
             [dict setValue:[coupon valueForKey:@"message"] forKey:@"message"];
-            [dict setValue:[coupon valueForKey:@"couponDescription"] forKey:@"couponDescription"];
+            [dict setValue:[coupon valueForKey:@"couponDescription"] forKey:@"description"];
             [dict setValue:[coupon valueForKey:@"path"] forKey:@"path"];
             [dict setValue:[coupon valueForKey:@"action"] forKey:@"action"];
             [dict setValue:[coupon valueForKey:@"contentState"] forKey:@"contentState"];
-            [dict setValue:[coupon valueForKey:@"contentType"] forKey:@"contentType"];
-            [dict setValue:[coupon valueForKey:@"beaconUmm"] forKey:@"beaconUmm"];
+            [dict setValue:[coupon valueForKey:@"contentType"] forKey:@"type"];
+            [dict setValue:[coupon valueForKey:@"beaconUmm"] forKey:@"beaconId"];
             [dict setValue:[coupon valueForKey:@"couponState"] forKey:@"couponState"];
-//            [dict setValue:[coupon valueForKey:@"createTime"] forKey:@"createTime"];
-//            [dict setValue:[coupon valueForKey:@"expirationDate"] forKey:@"expirationDate"];
+            
+            NSDate *createTime = [coupon valueForKey:@"createTime"];
+            [dict setValue:[dateFormatter stringFromDate:createTime] forKey:@"createTime"];
+            NSDate *expirationDate = [coupon valueForKey:@"expirationDate"];
+            [dict setValue:[dateFormatter stringFromDate:expirationDate] forKey:@"expirationDate"];
             [results addObject:dict];
         }
         CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:results];
@@ -338,9 +378,22 @@ NSDictionary *preferences;
 }
 
 - (void)showContentInfo:(CDVInvokedUrlCommand *)command {
-    OBContent *content = [OBContent alloc];
+    OBContent *content = [[OBContent alloc] init];
     UIWindow *window = [UIApplication sharedApplication].keyWindow;
     UIViewController *rootViewController = window.rootViewController;
+    
+    [content setValue:@"" forKey:@"title"];
+    [content setValue:@"" forKey:@"uuid"];
+    [content setValue:@"" forKey:@"message"];
+    [content setValue:@"" forKey:@"couponDescription"];
+    [content setValue:@"" forKey:@"path"];
+    [content setValue:@"" forKey:@"action"];
+    [content setValue:@"" forKey:@"beaconUmm"];
+    [content setValue:@"" forKey:@"couponState"];
+    [content setValue:@"" forKey:@"createTime"];
+    [content setValue:@"" forKey:@"expirationDate"];
+    [content setContentType:ContentTypeText];
+    [content setContentState:ContentStateInit];
 
     [[OnyxBeacon sharedInstance] showContentInfo:content inViewController:rootViewController ];
     CDVPluginResult* pluginResult = [CDVPluginResult
