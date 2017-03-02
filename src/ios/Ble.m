@@ -93,6 +93,13 @@ NSDictionary *preferences;
         deliveredCouponsListeners = [[NSMutableArray alloc] init];
     }
     [deliveredCouponsListeners addObject:command.callbackId];
+    
+    //for testing
+    NSArray *coupons = [[OnyxBeacon sharedInstance] getContent];
+    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                      messageAsArray: coupons];
+    [pluginResult setKeepCallbackAsBool:YES];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
 - (void)getDeliveredCoupons:(CDVInvokedUrlCommand *) command{
@@ -106,12 +113,12 @@ NSDictionary *preferences;
     
     NSArray *coupons = [[OnyxBeacon sharedInstance] getContent];
     
-    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+    CDVPluginResult* contentResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                      messageAsArray: coupons];
     
-    [pluginResult setKeepCallbackAsBool:YES];
+    [contentResult setKeepCallbackAsBool:YES];
     for (NSString *callbackId in deliveredCouponsListeners) {
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:callbackId];
+        [self.commandDelegate sendPluginResult:contentResult callbackId:callbackId];
     }
 }
 
