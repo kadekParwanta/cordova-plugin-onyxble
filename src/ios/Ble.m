@@ -25,7 +25,7 @@
 NSMutableArray *rangeBeaconsListeners;
 NSMutableArray *couponsListeners;
 NSString *errorCallbackId;
-NSString *deliveredCallbackId;
+NSMutableArray *deliveredCouponsListeners;
 NSDictionary *preferences;
 
 /*
@@ -89,25 +89,30 @@ NSDictionary *preferences;
 }
 
 - (void)addDeliveredCouponsListener:(CDVInvokedUrlCommand *) command{
-    deliveredCallbackId = command.callbackId;
+    if (deliveredCouponsListeners == nil) {
+        deliveredCouponsListeners = [[NSMutableArray alloc] init];
+    }
+    [deliveredCouponsListeners addObject:command.callbackId];
 }
 
 - (void)getDeliveredCoupons:(CDVInvokedUrlCommand *) command{
     CDVPluginResult* pluginResult = [CDVPluginResult
                                      resultWithStatus:CDVCommandStatus_OK
                                      messageAsString:@"getDeliveredCoupon is invoked"];
-    
+    [pluginResult setKeepCallbackAsBool:YES];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     
     // in android, the delivered coupons is retrieved via broadcast receiver, while in iOS synchronously
     
     NSArray *coupons = [[OnyxBeacon sharedInstance] getContent];
     
-    pluginResult = [CDVPluginResult
-                                     resultWithStatus:CDVCommandStatus_OK
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
                                      messageAsArray: coupons];
     
-    if (deliveredCallbackId.length > 0) [self.commandDelegate sendPluginResult:pluginResult callbackId:deliveredCallbackId];
+    [pluginResult setKeepCallbackAsBool:YES];
+    for (NSString *callbackId in deliveredCouponsListeners) {
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:callbackId];
+    }
 }
 
 
@@ -213,7 +218,25 @@ NSDictionary *preferences;
 
 -(void (^)(NSArray *coupons)) createCouponHandler {
     return ^(NSArray *coupons) {
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:coupons];
+        NSMutableArray * results = [[NSMutableArray alloc] init];
+        for ( int i = 0, size = (int) coupons.count; i< size; i++) {
+            NSMutableDictionary* coupon = [coupons objectAtIndex:i];
+            NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+            [dict setValue:[coupon valueForKey:@"title"] forKey:@"title"];
+            [dict setValue:[coupon valueForKey:@"uuid"] forKey:@"uuid"];
+            [dict setValue:[coupon valueForKey:@"message"] forKey:@"message"];
+            [dict setValue:[coupon valueForKey:@"couponDescription"] forKey:@"couponDescription"];
+            [dict setValue:[coupon valueForKey:@"path"] forKey:@"path"];
+            [dict setValue:[coupon valueForKey:@"action"] forKey:@"action"];
+            [dict setValue:[coupon valueForKey:@"contentState"] forKey:@"contentState"];
+            [dict setValue:[coupon valueForKey:@"contentType"] forKey:@"contentType"];
+            [dict setValue:[coupon valueForKey:@"beaconUmm"] forKey:@"beaconUmm"];
+            [dict setValue:[coupon valueForKey:@"couponState"] forKey:@"couponState"];
+//            [dict setValue:[coupon valueForKey:@"createTime"] forKey:@"createTime"];
+//            [dict setValue:[coupon valueForKey:@"expirationDate"] forKey:@"expirationDate"];
+            [results addObject:dict];
+        }
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:results];
         [result setKeepCallbackAsBool:YES];
         for (NSString *callbackId in couponsListeners) {
             [self.commandDelegate sendPluginResult:result callbackId:callbackId];
