@@ -116,12 +116,12 @@ Ble.prototype.getDeliveredCoupons = function (success) {
     exec(success, function(){}, MODULE_NAME, 'getDeliveredCoupons', []);
 }
 
-Ble.prototype.showCoupon = function (success, coupon) {
-    if (typeof (success) !== 'function') {
+Ble.prototype.showCoupon = function (success, fail, coupon) {
+    if (typeof (success) !== 'function' || typeof (fail) !== 'function') {
         throw "A callback must be provided";
     }
     
-    exec(success, function(){}, MODULE_NAME, 'showCoupon', [coupon]);
+    exec(success, fail, MODULE_NAME, 'showCoupon', [coupon]);
 }
 
 var me = new Ble();

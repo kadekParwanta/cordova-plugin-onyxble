@@ -266,14 +266,14 @@ NSDictionary *preferences;
             [dict setValue:[coupon valueForKey:@"path"] forKey:@"path"];
             [dict setValue:[coupon valueForKey:@"action"] forKey:@"action"];
             [dict setValue:[coupon valueForKey:@"contentState"] forKey:@"contentState"];
-            [dict setValue:[coupon valueForKey:@"contentType"] forKey:@"type"];
+            [dict setValue:[coupon valueForKey:@"contentType"] forKey:@"type_id"];
             [dict setValue:[coupon valueForKey:@"beaconUmm"] forKey:@"beaconId"];
-            [dict setValue:[coupon valueForKey:@"couponState"] forKey:@"couponState"];
+            [dict setValue:[coupon valueForKey:@"couponState"] forKey:@"state"];
             
             NSDate *createTime = [coupon valueForKey:@"createTime"];
             [dict setValue:[dateFormatter stringFromDate:createTime] forKey:@"createTime"];
             NSDate *expirationDate = [coupon valueForKey:@"expirationDate"];
-            [dict setValue:[dateFormatter stringFromDate:expirationDate] forKey:@"expirationDate"];
+            [dict setValue:[dateFormatter stringFromDate:expirationDate] forKey:@"expires"];
             [results addObject:dict];
         }
         CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:results];
@@ -377,28 +377,83 @@ NSDictionary *preferences;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)showContentInfo:(CDVInvokedUrlCommand *)command {
+- (void)showCoupon:(CDVInvokedUrlCommand *)command {
     OBContent *content = [[OBContent alloc] init];
     UIWindow *window = [UIApplication sharedApplication].keyWindow;
     UIViewController *rootViewController = window.rootViewController;
+    NSString *couponStr = [command.arguments objectAtIndex:0];
+    NSData *couponData = [couponStr dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *jsonError;
+    NSDictionary *couponJSON = [NSJSONSerialization JSONObjectWithData:couponData options:NSJSONReadingMutableContainers error:&jsonError];
+    if (jsonError != nil) {
+        CDVPluginResult* pluginResult = [CDVPluginResult
+                                         resultWithStatus:CDVCommandStatus_ERROR
+                                         messageAsString: jsonError.localizedDescription];
+        
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"dd-MM-yyy HH:mm:ss ZZZ"];
     
-    [content setValue:@"" forKey:@"title"];
-    [content setValue:@"" forKey:@"uuid"];
-    [content setValue:@"" forKey:@"message"];
-    [content setValue:@"" forKey:@"couponDescription"];
-    [content setValue:@"" forKey:@"path"];
-    [content setValue:@"" forKey:@"action"];
-    [content setValue:@"" forKey:@"beaconUmm"];
-    [content setValue:@"" forKey:@"couponState"];
-    [content setValue:@"" forKey:@"createTime"];
-    [content setValue:@"" forKey:@"expirationDate"];
-    [content setContentType:ContentTypeText];
-    [content setContentState:ContentStateInit];
+    [content setValue:[couponJSON valueForKey:@"name"] forKey:@"title"];
+    [content setValue:[couponJSON valueForKey:@"couponId"] forKey:@"uuid"];
+    [content setValue:[couponJSON valueForKey:@"message"]forKey:@"message"];
+    [content setValue:[couponJSON valueForKey:@"description"] forKey:@"couponDescription"];
+    [content setValue:[couponJSON valueForKey:@"path"] forKey:@"path"];
+    [content setValue:[couponJSON valueForKey:@"action"] forKey:@"action"];
+    [content setValue:[couponJSON valueForKey:@"beaconId"] forKey:@"beaconUmm"];
+    
+    NSDate *createTimeDate = [dateFormatter dateFromString:[couponJSON valueForKey:@"createTime"]];
+    [content setValue:createTimeDate forKey:@"createTime"];
+    
+    NSDate *expirationDate = [dateFormatter dateFromString:[couponJSON valueForKey:@"expirationDate"]];
+    [content setValue:expirationDate forKey:@"expirationDate"];
+    
+    NSNumber *state = [couponJSON valueForKey:@"state"];
+    switch (state.intValue) {
+        case 1:
+            [content setContentState:ContentStateSent];
+            break;
+        case 2:
+             [content setContentState:ContentStateUnread];
+            break;
+        case 3:
+             [content setContentState:ContentStateRead];
+            break;
+        case 4:
+             [content setContentState:ContentStateSaved];
+            break;
+        case 5:
+             [content setContentState:ContentStateArchived];
+            break;
+            
+        default:
+             [content setContentState:ContentStateInit];
+            break;
+    }
+    
+    NSNumber *type = [couponJSON valueForKey:@"type_id"];
+    switch (type.intValue) {
+        case 1:
+            [content setContentType:ContentTypeImage];
+            break;
+        case 2:
+            [content setContentType:ContentTypeWeb];
+            break;
+        case 3:
+            [content setContentType:ContentTypeText];
+            break;
+            
+        default:
+            [content setContentType:ContentTypeImage];
+            break;
+    }
 
     [[OnyxBeacon sharedInstance] showContentInfo:content inViewController:rootViewController ];
     CDVPluginResult* pluginResult = [CDVPluginResult
                                      resultWithStatus:CDVCommandStatus_OK
-                                     messageAsString: @"showContentInfo Invoked"];
+                                     messageAsString: @"showCoupon Invoked"];
     
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }

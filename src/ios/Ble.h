@@ -28,5 +28,6 @@
 - (void) stop:(CDVInvokedUrlCommand *)command;
 - (void) enterBackground:(CDVInvokedUrlCommand *)command;
 - (void) enterForeground:(CDVInvokedUrlCommand *)command;
+- (void) showCoupon:(CDVInvokedUrlCommand *)command;
 
 @end
