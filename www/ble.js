@@ -124,6 +124,14 @@ Ble.prototype.showCoupon = function (success, fail, coupon) {
     exec(success, fail, MODULE_NAME, 'showCoupon', [coupon]);
 }
 
+Ble.prototype.getTags = function (success) {
+    if (typeof (success) !== 'function') {
+        throw "A callback must be provided";
+    }
+
+    exec(success, function () { }, MODULE_NAME, 'getTags', []);
+}
+
 var me = new Ble();
 
 if (cordova.platformId === 'android' || cordova.platformId === 'ios' || cordova.platformId === 'windowsphone') {

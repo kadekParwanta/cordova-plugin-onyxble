@@ -329,10 +329,20 @@ NSDictionary *preferences;
 }
 
 - (void)getTags:(CDVInvokedUrlCommand *)command {
-    NSArray * result  = [[OnyxBeacon sharedInstance] getTags];
+    NSArray * tags  = [[OnyxBeacon sharedInstance] getTags];
+    NSMutableArray * results = [[NSMutableArray alloc] init];
+    for ( int i = 0, size = (int) tags.count; i< size; i++) {
+        NSMutableDictionary* tag = [tags objectAtIndex:i];
+        NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+        [dict setValue:[tag valueForKey:@"tagId"] forKey:@"tagId"];
+        [dict setValue:[tag valueForKey:@"name"] forKey:@"name"];
+        [dict setValue:[tag valueForKey:@"tagType"] forKey:@"type_id"];
+        [dict setValue:[tag valueForKey:@"tagSubtype"] forKey:@"subtype_id"];
+        [results addObject:dict];
+    }
     CDVPluginResult* pluginResult = [CDVPluginResult
                                      resultWithStatus:CDVCommandStatus_OK
-                                     messageAsArray:result];
+                                     messageAsArray:results];
     
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
