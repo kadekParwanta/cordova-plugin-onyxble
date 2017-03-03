@@ -55,6 +55,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     public static final String ACTION_ENTER_BACKGROUND = "enterBackground";
     public static final String ACTION_ENTER_FOREGROUND = "enterForeground";
     public static final String ACTION_SHOW_COUPON = "showCoupon";
+    public static final String ACTION_GET_TAGS = "getTags";
 
     private CallbackContext messageChannel;
     // OnyxBeacon SDK
@@ -133,9 +134,9 @@ public class Ble extends CordovaPlugin implements BleStateListener {
                 getDeliveredCoupons(callbackContext);
             }   else if (action.equalsIgnoreCase(ACTION_SHOW_COUPON)) {
                 showCoupon(args, callbackContext);
-            }  else if (action.equals("getTags")) {
+            }  else if (action.equalsIgnoreCase(ACTION_GET_TAGS)) {
                 beaconManager.getTags();
-                callbackContext.success("Success");
+                callbackContext.success("getTags is invoked");
             } else if (action.equals("sendGenericUserProfile")) {
                 beaconManager.sendGenericUserProfile(jsonToMap(args.getJSONObject(0)));
                 callbackContext.success("Success");
