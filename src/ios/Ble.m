@@ -406,14 +406,15 @@ NSDictionary *preferences;
     [content setValue:[couponJSON valueForKey:@"path"] forKey:@"path"];
     [content setValue:[couponJSON valueForKey:@"action"] forKey:@"action"];
     [content setValue:[couponJSON valueForKey:@"beaconId"] forKey:@"beaconUmm"];
+    [content setValue:[couponJSON valueForKey:@"couponState"] forKey:@"state"];
     
     NSDate *createTimeDate = [dateFormatter dateFromString:[couponJSON valueForKey:@"createTime"]];
     [content setValue:createTimeDate forKey:@"createTime"];
     
-    NSDate *expirationDate = [dateFormatter dateFromString:[couponJSON valueForKey:@"expirationDate"]];
+    NSDate *expirationDate = [dateFormatter dateFromString:[couponJSON valueForKey:@"expires"]];
     [content setValue:expirationDate forKey:@"expirationDate"];
     
-    NSNumber *state = [couponJSON valueForKey:@"state"];
+    NSNumber *state = [couponJSON valueForKey:@"contentState"];
     switch (state.intValue) {
         case 1:
             [content setContentState:ContentStateSent];
