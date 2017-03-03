@@ -24,6 +24,7 @@
 
 NSMutableArray *rangeBeaconsListeners;
 NSMutableArray *couponsListeners;
+NSMutableArray *tagsListeners;
 NSString *errorCallbackId;
 NSMutableArray *deliveredCouponsListeners;
 NSDictionary *preferences;
@@ -142,6 +143,14 @@ NSDictionary *preferences;
 
 -(void)setErrorListener:(CDVInvokedUrlCommand *)command {
     errorCallbackId = command.callbackId;
+}
+
+
+- (void) addTagsListener: (CDVInvokedUrlCommand*)command{
+    if (tagsListeners == nil) {
+        tagsListeners = [[NSMutableArray alloc] init];
+    }
+    [tagsListeners addObject:command.callbackId];
 }
 
 -(void (^)(NSArray *beacons, OBBeaconRegion *region)) createRangeBeaconsHandler {
@@ -329,6 +338,13 @@ NSDictionary *preferences;
 }
 
 - (void)getTags:(CDVInvokedUrlCommand *)command {
+    CDVPluginResult* pluginResult = [CDVPluginResult
+                                     resultWithStatus:CDVCommandStatus_OK
+                                     messageAsString:@"getTags is invoked"];
+    [pluginResult setKeepCallbackAsBool:YES];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    
+    // in android, the tags is retrieved via broadcast receiver, while in iOS synchronously
     NSArray * tags  = [[OnyxBeacon sharedInstance] getTags];
     NSMutableArray * results = [[NSMutableArray alloc] init];
     for ( int i = 0, size = (int) tags.count; i< size; i++) {
@@ -340,11 +356,14 @@ NSDictionary *preferences;
         [dict setValue:[tag valueForKey:@"tagSubtype"] forKey:@"subtype_id"];
         [results addObject:dict];
     }
-    CDVPluginResult* pluginResult = [CDVPluginResult
+    pluginResult = [CDVPluginResult
                                      resultWithStatus:CDVCommandStatus_OK
                                      messageAsArray:results];
+    [pluginResult setKeepCallbackAsBool:YES];
     
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    for (NSString *callbackId in tagsListeners) {
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:callbackId];
+    }
 }
 
 

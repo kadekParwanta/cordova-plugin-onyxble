@@ -20,6 +20,7 @@
 
 - (void) addWebListener:(CDVInvokedUrlCommand *)command;
 - (void) addOnyxBeaconsListener: (CDVInvokedUrlCommand*)command;
+- (void) addTagsListener: (CDVInvokedUrlCommand*)command;
 - (void) addCouponsListener:(CDVInvokedUrlCommand *) command;
 - (void) addDeliveredCouponsListener:(CDVInvokedUrlCommand *) command;
 - (void) getDeliveredCoupons:(CDVInvokedUrlCommand *) command;
