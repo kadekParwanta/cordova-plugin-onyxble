@@ -104,15 +104,34 @@ NSDictionary *preferences;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     
     // in android, the delivered coupons is retrieved via broadcast receiver, while in iOS synchronously
-    
     NSArray *coupons = [[OnyxBeacon sharedInstance] getContent];
-    
-    CDVPluginResult* contentResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
-                                                        messageAsArray: coupons];
-    
-    [contentResult setKeepCallbackAsBool:YES];
+    NSMutableArray * results = [[NSMutableArray alloc] init];
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"dd-MM-yyy HH:mm:ss ZZZ"];
+    for ( int i = 0, size = (int) coupons.count; i< size; i++) {
+        NSMutableDictionary* coupon = [coupons objectAtIndex:i];
+        NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+        [dict setValue:[coupon valueForKey:@"title"] forKey:@"name"];
+        [dict setValue:[coupon valueForKey:@"uuid"] forKey:@"couponId"];
+        [dict setValue:[coupon valueForKey:@"message"] forKey:@"message"];
+        [dict setValue:[coupon valueForKey:@"couponDescription"] forKey:@"description"];
+        [dict setValue:[coupon valueForKey:@"path"] forKey:@"path"];
+        [dict setValue:[coupon valueForKey:@"action"] forKey:@"action"];
+        [dict setValue:[coupon valueForKey:@"contentState"] forKey:@"contentState"];
+        [dict setValue:[coupon valueForKey:@"contentType"] forKey:@"type_id"];
+        [dict setValue:[coupon valueForKey:@"beaconUmm"] forKey:@"beaconId"];
+        [dict setValue:[coupon valueForKey:@"couponState"] forKey:@"state"];
+        
+        NSDate *createTime = [coupon valueForKey:@"createTime"];
+        [dict setValue:[dateFormatter stringFromDate:createTime] forKey:@"createTime"];
+        NSDate *expirationDate = [coupon valueForKey:@"expirationDate"];
+        [dict setValue:[dateFormatter stringFromDate:expirationDate] forKey:@"expires"];
+        [results addObject:dict];
+    }
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:results];
+    [result setKeepCallbackAsBool:YES];
     for (NSString *callbackId in deliveredCouponsListeners) {
-        [self.commandDelegate sendPluginResult:contentResult callbackId:callbackId];
+        [self.commandDelegate sendPluginResult:result callbackId:callbackId];
     }
 }
 
