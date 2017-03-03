@@ -132,6 +132,14 @@ Ble.prototype.getTags = function (success) {
     exec(success, function () { }, MODULE_NAME, 'getTags', []);
 }
 
+Ble.prototype.buzzBeacon = function (success, fail, beacon) {
+    if (typeof (success) !== 'function' || typeof (fail) !== 'function') {
+        throw "A callback must be provided";
+    }
+    
+    exec(success, fail, MODULE_NAME, 'buzzBeacon', [beacon]);
+}
+
 var me = new Ble();
 
 if (cordova.platformId === 'android' || cordova.platformId === 'ios' || cordova.platformId === 'windowsphone') {

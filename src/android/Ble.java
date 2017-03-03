@@ -56,6 +56,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     public static final String ACTION_ENTER_FOREGROUND = "enterForeground";
     public static final String ACTION_SHOW_COUPON = "showCoupon";
     public static final String ACTION_GET_TAGS = "getTags";
+    public static final String ACTION_BUZZ_BEACON = "buzzBeacon";
 
     private CallbackContext messageChannel;
     // OnyxBeacon SDK
@@ -137,6 +138,8 @@ public class Ble extends CordovaPlugin implements BleStateListener {
             }  else if (action.equalsIgnoreCase(ACTION_GET_TAGS)) {
                 beaconManager.getTags();
                 callbackContext.success("getTags is invoked");
+            }  else if (action.equalsIgnoreCase(ACTION_BUZZ_BEACON)) {
+                buzzBeacon(args, callbackContext);
             } else if (action.equals("sendGenericUserProfile")) {
                 beaconManager.sendGenericUserProfile(jsonToMap(args.getJSONObject(0)));
                 callbackContext.success("Success");
@@ -247,6 +250,18 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         }
 
         return !sendfalse;
+    }
+
+    private void buzzBeacon(JSONArray args, CallbackContext callbackContext) {
+        Gson gson = new Gson();
+        try {
+            IBeacon beacon = gson.fromJson(args.getJSONObject(0).toString(), IBeacon.class);
+            beaconManager.buzz(beacon);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        callbackContext.success("buzzBeacon is invoked");
     }
 
     private void showCoupon(JSONArray args, CallbackContext callbackContext) {
