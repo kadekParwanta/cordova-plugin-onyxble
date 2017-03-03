@@ -381,18 +381,21 @@ NSDictionary *preferences;
     OBContent *content = [[OBContent alloc] init];
     UIWindow *window = [UIApplication sharedApplication].keyWindow;
     UIViewController *rootViewController = window.rootViewController;
-    NSString *couponStr = [command.arguments objectAtIndex:0];
-    NSData *couponData = [couponStr dataUsingEncoding:NSUTF8StringEncoding];
-    NSError *jsonError;
-    NSDictionary *couponJSON = [NSJSONSerialization JSONObjectWithData:couponData options:NSJSONReadingMutableContainers error:&jsonError];
-    if (jsonError != nil) {
-        CDVPluginResult* pluginResult = [CDVPluginResult
-                                         resultWithStatus:CDVCommandStatus_ERROR
-                                         messageAsString: jsonError.localizedDescription];
+
+    // NSString *couponStr = [command.arguments objectAtIndex:0];
+    // NSData *couponData = [couponStr dataUsingEncoding:NSUTF8StringEncoding];
+    // NSError *jsonError;
+    // NSDictionary *couponJSON = [NSJSONSerialization JSONObjectWithData:couponData options:NSJSONReadingMutableContainers error:&jsonError];
+    // if (jsonError != nil) {
+    //     CDVPluginResult* pluginResult = [CDVPluginResult
+    //                                      resultWithStatus:CDVCommandStatus_ERROR
+    //                                      messageAsString: jsonError.localizedDescription];
         
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-        return;
-    }
+    //     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    //     return;
+    // }
+
+    NSDictionary *couponJSON = [command.arguments objectAtIndex:0];
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateFormat:@"dd-MM-yyy HH:mm:ss ZZZ"];
     
@@ -450,7 +453,15 @@ NSDictionary *preferences;
             break;
     }
 
-    [[OnyxBeacon sharedInstance] showContentInfo:content inViewController:rootViewController ];
+    UIViewController *vc = [[OnyxBeacon sharedInstance] viewControllerForContent:content];
+    UINavigationController *nc = [[UINavigationController alloc] initWithRootViewController:vc];
+    nc.navigationBar.tintColor = [UIColor whiteColor];
+    nc.navigationBar.barTintColor = [UIColor blackColor];
+    [nc.navigationBar setTitleTextAttributes:@{NSForegroundColorAttributeName : [UIColor whiteColor]}];
+    [rootViewController presentViewController:nc
+                                            animated:YES completion:nil];
+    
+    
     CDVPluginResult* pluginResult = [CDVPluginResult
                                      resultWithStatus:CDVCommandStatus_OK
                                      messageAsString: @"showCoupon Invoked"];
