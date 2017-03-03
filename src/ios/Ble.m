@@ -28,6 +28,7 @@ NSMutableArray *tagsListeners;
 NSString *errorCallbackId;
 NSMutableArray *deliveredCouponsListeners;
 NSDictionary *preferences;
+NSMutableArray *beaconArray;
 
 /*
  NSDictionary *jsonObj = [ [NSDictionary alloc]
@@ -174,6 +175,7 @@ NSDictionary *preferences;
 
 -(void (^)(NSArray *beacons, OBBeaconRegion *region)) createRangeBeaconsHandler {
     return ^(NSArray *beacons, OBBeaconRegion *region) {
+        beaconArray = [[NSMutableArray alloc] initWithArray:beacons];
         NSMutableArray * results = [[NSMutableArray alloc] init];
         for ( int i = 0, size = (int) beacons.count; i< size; i++) {
             NSMutableDictionary* beacon = [beacons objectAtIndex:i];
@@ -181,12 +183,14 @@ NSDictionary *preferences;
             NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
             [dateFormatter setDateFormat:@"dd-MM-yyy HH:mm:ss ZZZ"];
             
-            [dict setValue:[NSString stringWithFormat:@"%@", region.UUID] forKey:@"proximityUuid"];
-            [dict setValue:[NSString stringWithFormat:@"%@", [beacon valueForKey:@"uuid"]] forKey:@"uuid"];
+            [dict setValue:[NSString stringWithFormat:@"%@", region.UUID.UUIDString] forKey:@"proximityUuid"];
+            NSUUID *uuid = [beacon valueForKey:@"uuid"];
+            [dict setValue:[NSString stringWithFormat:@"%@", uuid.UUIDString] forKey:@"uuid"];
             [dict setValue:[beacon valueForKey:@"major"] forKey:@"major"];
             [dict setValue:[beacon valueForKey:@"minor"] forKey:@"minor"];
             [dict setValue:[beacon valueForKey:@"broadcastingScheme"] forKey:@"broadcastingScheme"];
             [dict setValue:[beacon valueForKey:@"lastProximity"] forKey:@"lastProximity"];
+            [dict setValue:[beacon valueForKey:@"proximityChanged"] forKey:@"proximityChanged"];
             
             NSDate *rangedTime = [beacon valueForKey:@"rangedTime"];
             [dict setValue:[dateFormatter stringFromDate:rangedTime] forKey:@"rangedTime"];
@@ -269,6 +273,125 @@ NSDictionary *preferences;
             [self.commandDelegate sendPluginResult:result callbackId:callbackId];
         }
     };
+}
+
+
+
+- (void)buzzBeacon:(CDVInvokedUrlCommand *)command
+{
+    OBBeacon *beacon;
+    NSString *couponStr = [command.arguments objectAtIndex:0];
+    NSData *couponData = [couponStr dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *jsonError;
+    NSDictionary *beaconJSON = [NSJSONSerialization JSONObjectWithData:couponData options:NSJSONReadingMutableContainers error:&jsonError];
+    if (jsonError != nil) {
+        CDVPluginResult* pluginResult = [CDVPluginResult
+                                         resultWithStatus:CDVCommandStatus_ERROR
+                                         messageAsString: jsonError.localizedDescription];
+        
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+    
+    for (int i=0, size=beaconArray.count; i< size; i++) {
+        NSString *uuidString = [NSString stringWithFormat:@"%@",[beaconJSON valueForKey:@"uuid"]];
+        NSNumber *major = [beaconJSON valueForKey:@"major"];
+        NSNumber *minor = [beaconJSON valueForKey:@"minor"];
+        
+        OBBeacon *beaconItem = [beaconArray objectAtIndex:i];
+        NSUUID *uuid = [beaconItem valueForKey:@"uuid"];
+        NSNumber *major2 =[beaconItem valueForKey:@"major"];
+        NSNumber *minor2 =[beaconItem valueForKey:@"minor"];
+        
+        if (([[NSString stringWithFormat:@"%@",uuid.UUIDString] isEqualToString:uuidString]) &&
+            ([major intValue] == [major2 intValue]) &&
+            ([minor intValue] == [minor2 intValue])) {
+            beacon = beaconItem;
+        }
+    }
+    
+    /*
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"dd-MM-yyy HH:mm:ss ZZZ"];
+    
+    NSString *uuidString = [beaconJSON valueForKey:@"uuid"];
+    [beacon setValue:[[NSUUID alloc] initWithUUIDString:uuidString] forKey:@"uuid"];
+    [beacon setValue:[beaconJSON valueForKey:@"major"] forKey:@"major"];
+    [beacon setValue:[beaconJSON valueForKey:@"minor"] forKey:@"minor"];
+    
+    [beacon setValue:[beaconJSON valueForKey:@"broadcastingScheme"] forKey:@"broadcastingScheme"];
+    [beacon setValue:[beaconJSON valueForKey:@"lastProximity"] forKey:@"lastProximity"];
+    [beacon setValue:[beaconJSON valueForKey:@"proximityChanged"] forKey:@"proximityChanged"];
+    
+    NSString *rangedTime = [beaconJSON valueForKey:@"rangedTime"];
+    [beacon setValue:[dateFormatter dateFromString:rangedTime] forKey:@"rangedTime"];
+    
+    NSString *lastSeen = [beaconJSON valueForKey:@"lastSeen"];
+    [beacon setValue:[dateFormatter dateFromString:lastSeen] forKey:@"lastSeen"];
+    
+    
+    [beacon setValue:[beaconJSON valueForKey:@"umm"] forKey:@"umm"];
+    [beacon setValue:[beaconJSON valueForKey:@"rssi"] forKey:@"rssi"];
+    [beacon setValue:[beaconJSON valueForKey:@"proximity"] forKey:@"proximity"];
+    
+    NSArray *tags = [beacon valueForKey:@"tags"];
+    NSMutableSet *tagsSet = [[NSMutableSet alloc] init];
+    for (NSNumber* num in tags) {
+        [tagsSet addObject:num];
+    }
+    [beacon setValue:tagsSet forKey:@"tags"];
+    
+    NSString *unknownTimer = [beaconJSON valueForKey:@"unknownTimer"];
+    [beacon setValue:[dateFormatter dateFromString:unknownTimer] forKey:@"unknownTimer"];
+    NSString *lastUpdated = [beaconJSON valueForKey:@"lastUpdated"];
+    [beacon setValue:[dateFormatter dateFromString:lastUpdated] forKey:@"lastUpdated"];
+    NSString *lastChanged = [beaconJSON valueForKey:@"lastChanged"];
+    [beacon setValue:[dateFormatter dateFromString:lastChanged] forKey:@"lastChanged"];
+    
+    [beacon setValue:[beaconJSON valueForKey:@"eddystoneNamespaceID"] forKey:@"eddystoneNamespaceID"];
+    [beacon setValue:[beaconJSON valueForKey:@"eddystoneInstanceID"] forKey:@"eddystoneInstanceID"];
+    [beacon setValue:[beaconJSON valueForKey:@"eddystoneURL"] forKey:@"eddystoneURL"];
+    [beacon setValue:[beaconJSON valueForKey:@"power"] forKey:@"power"];
+    [beacon setValue:[beaconJSON valueForKey:@"telemetry"] forKey:@"telemetry"];
+    [beacon setValue:[beaconJSON valueForKey:@"accuracy"] forKey:@"accuracy"];
+     
+    [beacon setValue:[beaconJSON valueForKey:@"beaconId"] forKey:@"beaconId"];
+    [beacon setValue:[beaconJSON valueForKey:@"name"] forKey:@"name"];
+    [beacon setValue:[beaconJSON valueForKey:@"device_name"] forKey:@"device_name"];
+    [beacon setValue:[beaconJSON valueForKey:@"batt"] forKey:@"batt"];
+    [beacon setValue:[beaconJSON valueForKey:@"abdescription"] forKey:@"abdescription"];
+    [beacon setValue:[beaconJSON valueForKey:@"lat"] forKey:@"lat"];
+    [beacon setValue:[beaconJSON valueForKey:@"lng"] forKey:@"lng"];
+    */
+    
+    
+    if (beacon == nil) {
+        CDVPluginResult* pluginResult = [CDVPluginResult
+                                         resultWithStatus:CDVCommandStatus_ERROR
+                                         messageAsString: @"beacon not found"];
+        
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+    
+    NSError *e = [[OnyxBeacon sharedInstance] buzzBeacon:beacon];
+    
+    if (e != nil) {
+        CDVPluginResult* pluginResult = [CDVPluginResult
+                                         resultWithStatus:CDVCommandStatus_ERROR
+                                         messageAsString: e.localizedDescription];
+        
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    } else {
+        CDVPluginResult* pluginResult = [CDVPluginResult
+                                         resultWithStatus:CDVCommandStatus_OK
+                                         messageAsString: @"buzzBeacon Invoked"];
+        
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }
+    
+    
 }
 
 -(void (^)(NSError *error)) createErrorHandler {
@@ -376,8 +499,8 @@ NSDictionary *preferences;
         [results addObject:dict];
     }
     pluginResult = [CDVPluginResult
-                                     resultWithStatus:CDVCommandStatus_OK
-                                     messageAsArray:results];
+                    resultWithStatus:CDVCommandStatus_OK
+                    messageAsArray:results];
     [pluginResult setKeepCallbackAsBool:YES];
     
     for (NSString *callbackId in tagsListeners) {

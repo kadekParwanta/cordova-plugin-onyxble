@@ -31,5 +31,6 @@
 - (void) enterForeground:(CDVInvokedUrlCommand *)command;
 - (void) showCoupon:(CDVInvokedUrlCommand *)command;
 - (void) getTags:(CDVInvokedUrlCommand *)command;
+- (void) buzzBeacon:(CDVInvokedUrlCommand *)command;
 
 @end
