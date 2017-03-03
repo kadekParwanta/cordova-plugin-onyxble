@@ -107,7 +107,7 @@ NSDictionary *preferences;
     NSArray *coupons = [[OnyxBeacon sharedInstance] getContent];
     
     CDVPluginResult* contentResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
-                                     messageAsArray: coupons];
+                                                        messageAsArray: coupons];
     
     [contentResult setKeepCallbackAsBool:YES];
     for (NSString *callbackId in deliveredCouponsListeners) {
@@ -184,7 +184,7 @@ NSDictionary *preferences;
             NSDate *lastChanged = [beacon valueForKey:@"lastChanged"];
             [dict setValue:[dateFormatter stringFromDate:lastChanged] forKey:@"lastChanged"];
             
-//            [dict setValue:[beacon valueForKey:@"timeLocationMetrics"] forKey:@"timeLocationMetrics"];
+            //            [dict setValue:[beacon valueForKey:@"timeLocationMetrics"] forKey:@"timeLocationMetrics"];
             [dict setValue:[beacon valueForKey:@"eddystoneNamespaceID"] forKey:@"eddystoneNamespaceID"];
             [dict setValue:[beacon valueForKey:@"eddystoneInstanceID"] forKey:@"eddystoneInstanceID"];
             [dict setValue:[beacon valueForKey:@"eddystoneURL"] forKey:@"eddystoneURL"];
@@ -290,7 +290,7 @@ NSDictionary *preferences;
 }
 
 - (void)locationManagerDidEnterRegion:(CLRegion *)region{
-
+    
     NSString* jsString = nil;
     jsString = [NSString stringWithFormat:@"%@(\"%@\");", @"window.cordova.plugins.Ble.locationManagerDidEnterRegion", region];
     [self.commandDelegate evalJs:jsString];
@@ -317,7 +317,7 @@ NSDictionary *preferences;
 
 - (void)contentOpened:(CDVInvokedUrlCommand *)command {
     OBContent *content = [OBContent alloc];
-
+    
     
     
     [[OnyxBeacon sharedInstance] contentOpened:content];
@@ -381,21 +381,19 @@ NSDictionary *preferences;
     OBContent *content = [[OBContent alloc] init];
     UIWindow *window = [UIApplication sharedApplication].keyWindow;
     UIViewController *rootViewController = window.rootViewController;
-
-    // NSString *couponStr = [command.arguments objectAtIndex:0];
-    // NSData *couponData = [couponStr dataUsingEncoding:NSUTF8StringEncoding];
-    // NSError *jsonError;
-    // NSDictionary *couponJSON = [NSJSONSerialization JSONObjectWithData:couponData options:NSJSONReadingMutableContainers error:&jsonError];
-    // if (jsonError != nil) {
-    //     CDVPluginResult* pluginResult = [CDVPluginResult
-    //                                      resultWithStatus:CDVCommandStatus_ERROR
-    //                                      messageAsString: jsonError.localizedDescription];
+    NSString *couponStr = [command.arguments objectAtIndex:0];
+    NSData *couponData = [couponStr dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *jsonError;
+    NSDictionary *couponJSON = [NSJSONSerialization JSONObjectWithData:couponData options:NSJSONReadingMutableContainers error:&jsonError];
+    if (jsonError != nil) {
+        CDVPluginResult* pluginResult = [CDVPluginResult
+                                         resultWithStatus:CDVCommandStatus_ERROR
+                                         messageAsString: jsonError.localizedDescription];
         
-    //     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    //     return;
-    // }
-
-    NSDictionary *couponJSON = [command.arguments objectAtIndex:0];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        return;
+    }
+    //    NSDictionary *couponJSON = [command.arguments objectAtIndex:0];
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     [dateFormatter setDateFormat:@"dd-MM-yyy HH:mm:ss ZZZ"];
     
@@ -406,7 +404,7 @@ NSDictionary *preferences;
     [content setValue:[couponJSON valueForKey:@"path"] forKey:@"path"];
     [content setValue:[couponJSON valueForKey:@"action"] forKey:@"action"];
     [content setValue:[couponJSON valueForKey:@"beaconId"] forKey:@"beaconUmm"];
-    [content setValue:[couponJSON valueForKey:@"couponState"] forKey:@"state"];
+    [content setValue:[couponJSON valueForKey:@"state"] forKey:@"couponState"];
     
     NSDate *createTimeDate = [dateFormatter dateFromString:[couponJSON valueForKey:@"createTime"]];
     [content setValue:createTimeDate forKey:@"createTime"];
@@ -420,20 +418,20 @@ NSDictionary *preferences;
             [content setContentState:ContentStateSent];
             break;
         case 2:
-             [content setContentState:ContentStateUnread];
+            [content setContentState:ContentStateUnread];
             break;
         case 3:
-             [content setContentState:ContentStateRead];
+            [content setContentState:ContentStateRead];
             break;
         case 4:
-             [content setContentState:ContentStateSaved];
+            [content setContentState:ContentStateSaved];
             break;
         case 5:
-             [content setContentState:ContentStateArchived];
+            [content setContentState:ContentStateArchived];
             break;
             
         default:
-             [content setContentState:ContentStateInit];
+            [content setContentState:ContentStateInit];
             break;
     }
     
@@ -453,14 +451,14 @@ NSDictionary *preferences;
             [content setContentType:ContentTypeImage];
             break;
     }
-
+    
     UIViewController *vc = [[OnyxBeacon sharedInstance] viewControllerForContent:content];
     UINavigationController *nc = [[UINavigationController alloc] initWithRootViewController:vc];
     nc.navigationBar.tintColor = [UIColor whiteColor];
     nc.navigationBar.barTintColor = [UIColor blackColor];
     [nc.navigationBar setTitleTextAttributes:@{NSForegroundColorAttributeName : [UIColor whiteColor]}];
     [rootViewController presentViewController:nc
-                                            animated:YES completion:nil];
+                                     animated:YES completion:nil];
     
     
     CDVPluginResult* pluginResult = [CDVPluginResult
@@ -480,7 +478,7 @@ NSDictionary *preferences;
                                      messageAsString: c.restorationIdentifier];
     
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-
+    
 }
 
 - (void)deleteContent:(CDVInvokedUrlCommand *)command {
@@ -510,7 +508,7 @@ NSDictionary *preferences;
 
 - (void)sendUserMetrics : (CDVInvokedUrlCommand *)command {
     NSMutableDictionary* user = [command.arguments objectAtIndex:0];
-
+    
     [[OnyxBeacon sharedInstance] sendUserMetrics:user];
     
     CDVPluginResult* pluginResult = [CDVPluginResult
@@ -560,7 +558,7 @@ NSDictionary *preferences;
     NSString* message = [command.arguments objectAtIndex:2];
     
     [[OnyxBeacon sharedInstance] sendReport:data reporter:reporter message:message handler:^(NSError *error) {
-
+        
     }];
     
     
@@ -580,7 +578,7 @@ NSDictionary *preferences;
                                      messageAsString: c.restorationIdentifier];
     
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-
+    
     
 }
 
@@ -606,17 +604,17 @@ NSDictionary *preferences;
         return;
     }
     
-// [self.commandDelegate runInBackground:^{
-        [[OnyxBeacon sharedInstance] requestAlwaysAuthorization];
-        [[OnyxBeacon sharedInstance] startServiceWithClientID:SA_CLIENTID secret:SA_SECRET];
-        [[OnyxBeacon sharedInstance] setContentDelegate:self];
-        [[OnyxBeacon sharedInstance] setDelegate:self];
-        
-        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
-                                         messageAsString: @"startServiceWithClientID Invoked"];
-        
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-// }];  
+    // [self.commandDelegate runInBackground:^{
+    [[OnyxBeacon sharedInstance] requestAlwaysAuthorization];
+    [[OnyxBeacon sharedInstance] startServiceWithClientID:SA_CLIENTID secret:SA_SECRET];
+    [[OnyxBeacon sharedInstance] setContentDelegate:self];
+    [[OnyxBeacon sharedInstance] setDelegate:self];
+    
+    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                     messageAsString: @"startServiceWithClientID Invoked"];
+    
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    // }];
     
 }
 
