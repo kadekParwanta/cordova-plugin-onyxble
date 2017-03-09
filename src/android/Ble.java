@@ -255,7 +255,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     private void buzzBeacon(JSONArray args, CallbackContext callbackContext) {
         Gson gson = new Gson();
         try {
-            IBeacon beacon = gson.fromJson(args.getJSONObject(0).toString(), IBeacon.class);
+            IBeacon beacon = gson.fromJson(args.getString(0), IBeacon.class);
             beaconManager.buzz(beacon);
             callbackContext.success("buzzBeacon is invoked");
         } catch (JSONException e) {
@@ -268,7 +268,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         Context context = this.cordova.getActivity();
         Gson gson = new Gson();
         try {
-            Coupon coupon = gson.fromJson(args.getJSONObject(0).toString(), Coupon.class);
+            Coupon coupon = gson.fromJson(args.getString(0), Coupon.class);
             OnyxBeaconApplication.startCouponDetailActivity(context, coupon);
             callbackContext.success("showCoupon is invoked");
         } catch (JSONException e) {
