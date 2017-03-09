@@ -411,7 +411,7 @@ NSMutableArray *beaconArray;
             NSMutableDictionary* coupon = [coupons objectAtIndex:i];
             NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
             [dict setValue:[coupon valueForKey:@"title"] forKey:@"name"];
-            [dict setValue:[coupon valueForKey:@"uuid"] forKey:@"couponId"];
+            [dict setValue:[coupon valueForKey:@"uuid"] forKey:@"beaconUuid"];
             [dict setValue:[coupon valueForKey:@"message"] forKey:@"message"];
             [dict setValue:[coupon valueForKey:@"couponDescription"] forKey:@"description"];
             [dict setValue:[coupon valueForKey:@"path"] forKey:@"path"];
@@ -569,7 +569,7 @@ NSMutableArray *beaconArray;
     [dateFormatter setDateFormat:@"dd-MM-yyy HH:mm:ss ZZZ"];
     
     [content setValue:[couponJSON valueForKey:@"name"] forKey:@"title"];
-    [content setValue:[couponJSON valueForKey:@"couponId"] forKey:@"uuid"];
+    [content setValue:[couponJSON valueForKey:@"beaconUuid"] forKey:@"uuid"];
     [content setValue:[couponJSON valueForKey:@"message"]forKey:@"message"];
     [content setValue:[couponJSON valueForKey:@"description"] forKey:@"couponDescription"];
     [content setValue:[couponJSON valueForKey:@"path"] forKey:@"path"];
