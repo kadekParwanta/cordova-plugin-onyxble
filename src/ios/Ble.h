@@ -12,7 +12,10 @@
 
 #import <OnyxBeaconLib/OnyxBeacon.h>
 
-@interface Ble : CDVPlugin<OnyxBeaconContentDelegate, OnyxBeaconDelegate>
+@interface Ble : CDVPlugin<OnyxBeaconContentDelegate, OnyxBeaconDelegate>{
+    NSDictionary *notificationMessage;
+    BOOL    isInline;
+}
 
 @property (nonatomic, readwrite, strong) NSMutableDictionary* settings;
 @property (nonatomic, readwrite, strong) NSXMLParser* configParser;
@@ -32,5 +35,14 @@
 - (void) showCoupon:(CDVInvokedUrlCommand *)command;
 - (void) getTags:(CDVInvokedUrlCommand *)command;
 - (void) buzzBeacon:(CDVInvokedUrlCommand *)command;
+
+//Push Notifications
+@property (nonatomic, strong) NSDictionary *notificationMessage;
+@property BOOL                          isInline;
+
+- (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken;
+- (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error;
+- (void)setNotificationMessage:(NSDictionary *)notification;
+- (void)notificationReceived;
 
 @end

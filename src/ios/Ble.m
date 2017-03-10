@@ -11,16 +11,25 @@
 #import <Cordova/CDVConfigParser.h>
 #import <Cordova/NSDictionary+CordovaPreferences.h>
 
+//register for Push Notifications add Framework
+#import <IMFCore/IMFCore.h>
+#import <IMFPush/IMFPush.h>
+
+
 @interface Ble ()
 
 @property (nonatomic, copy) void (^rangeBeaconsHandler)(NSArray *beacons, OBBeaconRegion *region);
 @property (nonatomic, copy) void (^errorHandler)(NSError *error);
 @property (nonatomic, copy) void (^couponHandler)(NSArray *coupons);
+@property (nonatomic, strong) NSData *deviceToken;
 
 @end
 
 
 @implementation Ble
+
+@synthesize notificationMessage;
+@synthesize isInline;
 
 NSMutableArray *rangeBeaconsListeners;
 NSMutableArray *couponsListeners;
@@ -46,6 +55,8 @@ NSMutableArray *beaconArray;
     CDVConfigParser *delegate = [[CDVConfigParser alloc] init];
     [self parseSettingsWithParser:delegate];
     self.settings = delegate.settings;
+    
+    [self registerPush];
 }
 
 -(void)parseSettingsWithParser:(NSObject<NSXMLParserDelegate>*) delegate
@@ -826,5 +837,77 @@ NSMutableArray *beaconArray;
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     
 }
+
+- (void)registerPush
+{
+    UIApplication *application = [UIApplication sharedApplication];
+    if ([application respondsToSelector:@selector(registerUserNotificationSettings:)]) {
+        UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:(UIUserNotificationTypeBadge
+                                                                                             |UIUserNotificationTypeSound
+                                                                                             |UIUserNotificationTypeAlert)
+                                                                                 categories:nil];
+        [application registerUserNotificationSettings:settings];
+    }
+};
+
+- (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
+{
+    NSLog(@"didRegisterForRemoteNotificationsWithDeviceToken");
+    self.deviceToken = deviceToken;
+    [[OnyxBeacon sharedInstance] registerForPushNotificationWithDeviceToken:deviceToken forProvider:@"IBMBluemix" handler:^(NSDictionary *data, NSError *error) {
+        if (error == nil) {
+            NSString *appId = data[@"app_key"];
+            NSString *appRoute = data[@"route"];
+            NSString *clientSecret = data[@"client_secret"];
+            [self registerToIBMPushNotificationsWithApplicationId:appId applicationRoute:appRoute clientSecret:clientSecret];
+        }
+    }];
+};
+
+- (void)registerToIBMPushNotificationsWithApplicationId:(NSString*)appId applicationRoute:(NSString*)appRoute clientSecret:(NSString*)clientSecret {
+    if ([appId length] && [appRoute length] && [clientSecret length]) {
+        
+        IMFClient *imfClient = [IMFClient sharedInstance];
+        [imfClient initializeWithBackendRoute:appRoute backendGUID:appId];
+        
+        NSLog(@"PN Registering device ... ");
+        
+        IMFPushClient* push = [IMFPushClient sharedInstance];
+        [push initializeWithAppGUID:appId clientSecret:clientSecret];
+        if(push != nil){
+            [push registerWithDeviceToken:self.deviceToken completionHandler:^(IMFResponse *response,  NSError *error) {
+                if (error){
+                    NSLog(@"PN Failure ... ");
+                    NSLog(@"PN %@", error.description);
+                }  else {
+                    NSLog(@"PN Success... ");
+                    NSDictionary *result = response.responseJson;
+                    
+                    [[OnyxBeacon sharedInstance] sendPushNotificationProviderDeviceToken:result[@"deviceId"]];
+                    
+                    NSLog(@"PN %@ ", result.description);
+                    
+                }
+            }];
+        } else {
+            NSLog(@"Push Service is nil.");
+        }
+    }
+}
+
+- (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error
+{
+    NSLog(@"didFailToRegisterForRemoteNotificationsWithError : %@", error.localizedDescription);
+    _errorHandler(error);
+};
+
+- (void)setNotificationMessage:(NSDictionary *)notification
+{
+    NSLog(@"setNotificationMessage");
+};
+- (void)notificationReceived
+{
+    NSLog(@"notificationReceived: %@ - isInline: %hhd", notificationMessage, isInline);
+};
 
 @end
