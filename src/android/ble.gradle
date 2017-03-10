@@ -11,4 +11,8 @@ dependencies {
    compile 'com.google.android.gms:play-services-location:8.4.0'
    compile 'com.squareup.retrofit:retrofit:1.9.0'
    compile(name:'OnyxBeaconLibrary-release', ext:'aar')
+   compile 'com.ibm.mobilefirstplatform.clientsdk.android:core:1.+@aar'
+   compile 'com.ibm.mobilefirstplatform.clientsdk.android:push:1.+@aar'
+   compile 'com.google.android.gms:play-services-gcm:8.4.0'
+   compile 'com.squareup.okhttp:okhttp:2.5.0'
 }

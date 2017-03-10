@@ -2,20 +2,31 @@ package com.cordova.ble;
 
 
 import android.Manifest;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.ibm.mobilefirstplatform.clientsdk.android.core.api.BMSClient;
+import com.ibm.mobilefirstplatform.clientsdk.android.push.api.MFPPush;
+import com.ibm.mobilefirstplatform.clientsdk.android.push.api.MFPPushException;
+import com.ibm.mobilefirstplatform.clientsdk.android.push.api.MFPPushNotificationListener;
+import com.ibm.mobilefirstplatform.clientsdk.android.push.api.MFPPushResponseListener;
+import com.ibm.mobilefirstplatform.clientsdk.android.push.api.MFPSimplePushNotification;
 import com.onyxbeacon.OnyxBeaconApplication;
 import com.onyxbeacon.OnyxBeaconManager;
 import com.onyxbeacon.listeners.OnyxBeaconsListener;
 import com.onyxbeacon.listeners.OnyxCouponsListener;
+import com.onyxbeacon.listeners.OnyxPushListener;
 import com.onyxbeacon.listeners.OnyxTagsListener;
 import com.onyxbeacon.rest.auth.util.AuthData;
 import com.onyxbeacon.rest.auth.util.AuthenticationMode;
+import com.onyxbeacon.rest.model.account.BluemixApp;
 import com.onyxbeacon.rest.model.content.Coupon;
 import com.onyxbeacon.rest.model.content.Tag;
 import com.onyxbeacon.service.logging.LoggingStrategy;
@@ -31,10 +42,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class Ble extends CordovaPlugin implements BleStateListener {
@@ -52,11 +66,16 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     private static final String ACTION_ADD_DELIVERED_COUPON_LISTENER = "addDeliveredCouponsListener";
     private static final String ACTION_GET_DELIVERED_COUPONS = "getDeliveredCoupons";
     private static final String ACTION_SET_ERROR_LISTENER = "setErrorListener";
-    public static final String ACTION_ENTER_BACKGROUND = "enterBackground";
-    public static final String ACTION_ENTER_FOREGROUND = "enterForeground";
-    public static final String ACTION_SHOW_COUPON = "showCoupon";
-    public static final String ACTION_GET_TAGS = "getTags";
-    public static final String ACTION_BUZZ_BEACON = "buzzBeacon";
+    private static final String ACTION_ENTER_BACKGROUND = "enterBackground";
+    private static final String ACTION_ENTER_FOREGROUND = "enterForeground";
+    private static final String ACTION_SHOW_COUPON = "showCoupon";
+    private static final String ACTION_GET_TAGS = "getTags";
+    private static final String ACTION_BUZZ_BEACON = "buzzBeacon";
+    private static final String ACTION_Add_PUSH_LISTENER = "addPushListener";
+
+    private static final String PROPERTY_BLUEMIX_DEVICE_ID = "bluemix_device_id";
+    private static final String PROPERTY_BLUEMIX_CREDENTIALS = "bluemix_credentials";
+    private static final String PROPERTY_APP_VERSION = "appVersion";
 
     private CallbackContext messageChannel;
     // OnyxBeacon SDK
@@ -73,6 +92,9 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     private BleErrorListener mBleErrorListener;
     private ArrayList<CallbackContext> mCouponReceivers = new ArrayList<CallbackContext>();
     private ArrayList<CallbackContext> mDeliveredCouponReceivers = new ArrayList<CallbackContext>();
+    private MFPPush push;
+    private Boolean isPushRegistered = false;
+    private String pushError;
 
     interface BleErrorListener {
         void onError(int errorCode, Exception e);
@@ -86,6 +108,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
 
         mContentReceiver = ContentReceiver.getInstance();
         mContentReceiver.setOnyxCouponsListener(mOnyxCouponListener);
+        mContentReceiver.setOnyxPushListener(mOnyxPushListener);
         //Register for BLE events
         mBleReceiver = BleStateReceiver.getInstance();
         mBleReceiver.setBleStateListener(this);
@@ -140,6 +163,8 @@ public class Ble extends CordovaPlugin implements BleStateListener {
                 callbackContext.success("getTags is invoked");
             }  else if (action.equalsIgnoreCase(ACTION_BUZZ_BEACON)) {
                 buzzBeacon(args, callbackContext);
+            }  else if (action.equalsIgnoreCase(ACTION_Add_PUSH_LISTENER)) {
+                addPushListener(callbackContext);
             } else if (action.equals("sendGenericUserProfile")) {
                 beaconManager.sendGenericUserProfile(jsonToMap(args.getJSONObject(0)));
                 callbackContext.success("Success");
@@ -380,6 +405,112 @@ public class Ble extends CordovaPlugin implements BleStateListener {
             }
         };
 
+    }
+
+    private OnyxPushListener mOnyxPushListener = new OnyxPushListener() {
+        @Override
+        public void onBluemixCredentialsReceived(BluemixApp bluemixApp) {
+            storeBluemixCredentials(cordova.getActivity(), bluemixApp);
+            registerDeviceAtBluemix(bluemixApp);
+        }
+    };
+
+    private void addPushListener(final CallbackContext callbackContext) {
+        MFPPushNotificationListener notificationListener = new MFPPushNotificationListener() {
+            @Override
+            public void onReceive(MFPSimplePushNotification message) {
+                try {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("payload",message.getPayload());
+                    jsonObject.put("url",message.getUrl());
+                    jsonObject.put("alert",message.getAlert());
+                    PluginResult result = new PluginResult(PluginResult.Status.OK, jsonObject.toString());
+                    result.setKeepCallback(true);
+                    callbackContext.sendPluginResult(result);
+                } catch (JSONException e) {
+                    PluginResult result = new PluginResult(PluginResult.Status.ERROR, "Message is empty");
+                    result.setKeepCallback(true);
+                    callbackContext.sendPluginResult(result);
+                }
+            }
+        };
+
+        if (isPushRegistered && push != null) {
+            push.listen(notificationListener);
+        } else {
+            String errorMessage = "Not registered to Bluemix";
+            if (pushError != null) {
+                errorMessage = pushError;
+            }
+            PluginResult result = new PluginResult(PluginResult.Status.ERROR, errorMessage);
+            result.setKeepCallback(true);
+            callbackContext.sendPluginResult(result);
+        }
+
+    }
+
+    private void registerDeviceAtBluemix(BluemixApp bluemixApp) {
+        final Activity mActivity = cordova.getActivity();
+        final Context context = mActivity.getApplicationContext();
+        try {
+            BMSClient.getInstance().initialize(context, bluemixApp.route, bluemixApp.app_key);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        push = MFPPush.getInstance();
+        push.initialize(mActivity);
+
+        push.register(new MFPPushResponseListener<String>() {
+            @Override
+            public void onSuccess(String response) {
+                Pattern p = Pattern.compile("\"deviceId\":\"([0-9a-z\\-]+)");
+                Matcher m = p.matcher(response);
+                if (m.find()){
+                    storeBluemixDeviceId(context, m.group(1));
+                    beaconManager.sendDeviceToken("", m.group(1));
+                    isPushRegistered = true;
+                }
+            }
+
+            @Override
+            public void onFailure(MFPPushException exception) {
+                isPushRegistered = false;
+                pushError = exception.getErrorMessage();
+            }
+        });
+    }
+
+    private SharedPreferences getGCMPreferences(Context context) {
+        return context.getSharedPreferences(cordova.getActivity().getPackageName(),Context.MODE_PRIVATE);
+    }
+
+    private static int getAppVersion(Context context) {
+        try {
+            PackageInfo packageInfo = context.getPackageManager()
+                    .getPackageInfo(context.getPackageName(), 0);
+            return packageInfo.versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            // should never happen
+            throw new RuntimeException("Could not get package name: " + e);
+        }
+    }
+
+    private void storeBluemixDeviceId(Context context, String bluemixDeviceId) {
+        final SharedPreferences prefs = getGCMPreferences(context);
+        int appVersion = getAppVersion(context);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(PROPERTY_BLUEMIX_DEVICE_ID, bluemixDeviceId);
+        editor.putInt(PROPERTY_APP_VERSION, appVersion);
+        editor.apply();
+    }
+
+    private void storeBluemixCredentials(Context context, BluemixApp bluemixApp) {
+        final SharedPreferences prefs = getGCMPreferences(context);
+        int appVersion = getAppVersion(context);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(PROPERTY_BLUEMIX_CREDENTIALS, gson.toJson(bluemixApp));
+        editor.putInt(PROPERTY_APP_VERSION, appVersion);
+        editor.apply();
     }
 
     private void enterBackground() {

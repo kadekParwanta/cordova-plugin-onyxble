@@ -140,6 +140,14 @@ Ble.prototype.buzzBeacon = function (success, fail, beacon) {
     exec(success, fail, MODULE_NAME, 'buzzBeacon', [beacon]);
 }
 
+Ble.prototype.onNotificationReceived = function (success) {
+    if (typeof (success) !== 'function') {
+        throw "A callback must be provided";
+    }
+    
+    exec(success, function () { }, MODULE_NAME, 'addPushListener', []);
+}
+
 var me = new Ble();
 
 if (cordova.platformId === 'android' || cordova.platformId === 'ios' || cordova.platformId === 'windowsphone') {
