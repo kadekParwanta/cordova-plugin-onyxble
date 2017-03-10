@@ -1,4 +1,4 @@
-package com.cordova.ble;
+package com.plugin.onyxble;
 
 import android.app.Activity;
 import android.content.Context;

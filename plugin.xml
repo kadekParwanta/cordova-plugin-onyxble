@@ -3,7 +3,7 @@
 <plugin xmlns="http://cordova.apache.org/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"          
         xmlns:tools="http://schemas.android.com/tools"   
-        id="com-cordova-ble"
+        id="cordova-plugin-onyxble"
         version="2.0.1-dev">
     <name>Ble</name>
     <description>OnyxBeacon plugin</description>
@@ -24,7 +24,7 @@
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="Ble">
-                <param name="android-package" value="com.cordova.ble.Ble"/>
+                <param name="android-package" value="com.plugin.onyxble.Ble"/>
             </feature>
         </config-file>
 
@@ -45,7 +45,7 @@
        
 
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
-            <activity android:name="com.cordova.ble.ClickActivity"/>
+            <activity android:name="com.plugin.onyxble.ClickActivity"/>
             <provider
                 android:authorities="$PACKAGE_NAME.provider"
                 android:name="com.onyxbeaconservice.provider.IBeaconProvider"
@@ -53,27 +53,27 @@
                 android:exported="true">
             </provider>
 
-            <receiver android:name="com.cordova.ble.ContentReceiver">
+            <receiver android:name="com.plugin.onyxble.ContentReceiver">
                 <intent-filter>
-                    <action android:name="com.cordova.ble.content" />
+                    <action android:name="$PACKAGE_NAME.content" />
                 </intent-filter>
             </receiver>
 
-            <receiver android:name="com.cordova.ble.BleStateReceiver">
+            <receiver android:name="com.plugin.onyxble.BleStateReceiver">
                 <intent-filter>
-                    <action android:name="com.cordova.ble.scan" />
+                    <action android:name="$PACKAGE_NAME.scan" />
                 </intent-filter>
             </receiver>
   
             <meta-data tools:replace="android:value" android:name="com.google.android.gms.version" android:value="$GMS_VERSION" /> 
         </config-file>
 
-        <source-file src="src/android/ContentReceiver.java" target-dir="src/com/cordova/ble"/>
-        <source-file src="src/android/BleStateListener.java" target-dir="src/com/cordova/ble"/>
-        <source-file src="src/android/BleStateReceiver.java" target-dir="src/com/cordova/ble"/>      
-        <source-file src="src/android/Ble.java" target-dir="src/com/cordova/ble"/>      
-        <source-file src="src/android/BleWebRequestListener.java" target-dir="src/com/cordova/ble"/>      
-        <source-file src="src/android/ClickActivity.java" target-dir="src/com/cordova/ble"/>
+        <source-file src="src/android/ContentReceiver.java" target-dir="src/com/plugin/onyxble"/>
+        <source-file src="src/android/BleStateListener.java" target-dir="src/com/plugin/onyxble"/>
+        <source-file src="src/android/BleStateReceiver.java" target-dir="src/com/plugin/onyxble"/>      
+        <source-file src="src/android/Ble.java" target-dir="src/com/plugin/onyxble"/>      
+        <source-file src="src/android/BleWebRequestListener.java" target-dir="src/com/plugin/onyxble"/>      
+        <source-file src="src/android/ClickActivity.java" target-dir="src/com/plugin/onyxble"/>
         <framework src="src/android/ble.gradle" custom="true" type="gradleReference"/>
         <resource-file src="src/android/libs/OnyxBeaconLibrary-release.aar" target="libs/OnyxBeaconLibrary-release.aar"/>
         <hook type="before_plugin_install" src="hook/beforePluginInstall.js" />
