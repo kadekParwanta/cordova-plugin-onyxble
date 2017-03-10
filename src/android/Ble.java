@@ -71,7 +71,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     private static final String ACTION_SHOW_COUPON = "showCoupon";
     private static final String ACTION_GET_TAGS = "getTags";
     private static final String ACTION_BUZZ_BEACON = "buzzBeacon";
-    private static final String ACTION_Add_PUSH_LISTENER = "addPushListener";
+    private static final String ACTION_ADD_PUSH_LISTENER = "addPushListener";
 
     private static final String PROPERTY_BLUEMIX_DEVICE_ID = "bluemix_device_id";
     private static final String PROPERTY_BLUEMIX_CREDENTIALS = "bluemix_credentials";
@@ -92,9 +92,9 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     private BleErrorListener mBleErrorListener;
     private ArrayList<CallbackContext> mCouponReceivers = new ArrayList<CallbackContext>();
     private ArrayList<CallbackContext> mDeliveredCouponReceivers = new ArrayList<CallbackContext>();
+    private ArrayList<CallbackContext> mPushReceivers = new ArrayList<CallbackContext>();
     private MFPPush push;
     private Boolean isPushRegistered = false;
-    private String pushError;
 
     interface BleErrorListener {
         void onError(int errorCode, Exception e);
@@ -163,7 +163,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
                 callbackContext.success("getTags is invoked");
             }  else if (action.equalsIgnoreCase(ACTION_BUZZ_BEACON)) {
                 buzzBeacon(args, callbackContext);
-            }  else if (action.equalsIgnoreCase(ACTION_Add_PUSH_LISTENER)) {
+            }  else if (action.equalsIgnoreCase(ACTION_ADD_PUSH_LISTENER)) {
                 addPushListener(callbackContext);
             } else if (action.equals("sendGenericUserProfile")) {
                 beaconManager.sendGenericUserProfile(jsonToMap(args.getJSONObject(0)));
@@ -415,39 +415,10 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         }
     };
 
-    private void addPushListener(final CallbackContext callbackContext) {
-        MFPPushNotificationListener notificationListener = new MFPPushNotificationListener() {
-            @Override
-            public void onReceive(MFPSimplePushNotification message) {
-                try {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put("payload",message.getPayload());
-                    jsonObject.put("url",message.getUrl());
-                    jsonObject.put("alert",message.getAlert());
-                    PluginResult result = new PluginResult(PluginResult.Status.OK, jsonObject.toString());
-                    result.setKeepCallback(true);
-                    callbackContext.sendPluginResult(result);
-                } catch (JSONException e) {
-                    PluginResult result = new PluginResult(PluginResult.Status.ERROR, "Message is empty");
-                    result.setKeepCallback(true);
-                    callbackContext.sendPluginResult(result);
-                }
-            }
-        };
-
-        if (isPushRegistered && push != null) {
-            push.listen(notificationListener);
-        } else {
-            String errorMessage = "Not registered to Bluemix";
-            if (pushError != null) {
-                errorMessage = pushError;
-            }
-            PluginResult result = new PluginResult(PluginResult.Status.ERROR, errorMessage);
-            result.setKeepCallback(true);
-            callbackContext.sendPluginResult(result);
-        }
-
+    private void addPushListener(CallbackContext callbackContext) {
+        mPushReceivers.add(callbackContext);
     }
+
 
     private void registerDeviceAtBluemix(BluemixApp bluemixApp) {
         final Activity mActivity = cordova.getActivity();
@@ -460,6 +431,33 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         push = MFPPush.getInstance();
         push.initialize(mActivity);
 
+        final MFPPushNotificationListener notificationListener = new MFPPushNotificationListener() {
+            @Override
+            public void onReceive(MFPSimplePushNotification message) {
+                try {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("payload",message.getPayload());
+                    jsonObject.put("url",message.getUrl());
+                    jsonObject.put("alert",message.getAlert());
+                    for (CallbackContext callbackContext : mPushReceivers) {
+                        PluginResult result = new PluginResult(PluginResult.Status.OK, jsonObject.toString());
+                        result.setKeepCallback(true);
+                        callbackContext.sendPluginResult(result);
+                    }
+                } catch (JSONException e) {
+                    for (CallbackContext callbackContext : mPushReceivers) {
+                        PluginResult result = new PluginResult(PluginResult.Status.ERROR, e.getLocalizedMessage());
+                        result.setKeepCallback(true);
+                        callbackContext.sendPluginResult(result);
+                    }
+                }
+            }
+        };
+
+        if (isPushRegistered) {
+            return;
+        }
+
         push.register(new MFPPushResponseListener<String>() {
             @Override
             public void onSuccess(String response) {
@@ -469,13 +467,13 @@ public class Ble extends CordovaPlugin implements BleStateListener {
                     storeBluemixDeviceId(context, m.group(1));
                     beaconManager.sendDeviceToken("", m.group(1));
                     isPushRegistered = true;
+                    push.listen(notificationListener);
                 }
             }
 
             @Override
             public void onFailure(MFPPushException exception) {
                 isPushRegistered = false;
-                pushError = exception.getErrorMessage();
             }
         });
     }
