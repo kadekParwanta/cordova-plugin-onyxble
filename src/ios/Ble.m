@@ -127,7 +127,7 @@ NSMutableArray *notificationListeners;
         NSMutableDictionary* coupon = [coupons objectAtIndex:i];
         NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
         [dict setValue:[coupon valueForKey:@"title"] forKey:@"name"];
-        [dict setValue:[coupon valueForKey:@"uuid"] forKey:@"couponId"];
+        [dict setValue:[coupon valueForKey:@"uuid"] forKey:@"beaconUuid"];
         [dict setValue:[coupon valueForKey:@"message"] forKey:@"message"];
         [dict setValue:[coupon valueForKey:@"couponDescription"] forKey:@"description"];
         [dict setValue:[coupon valueForKey:@"path"] forKey:@"path"];
