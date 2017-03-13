@@ -21,6 +21,7 @@
 @property (nonatomic, copy) void (^rangeBeaconsHandler)(NSArray *beacons, OBBeaconRegion *region);
 @property (nonatomic, copy) void (^errorHandler)(NSError *error);
 @property (nonatomic, copy) void (^couponHandler)(NSArray *coupons);
+@property (nonatomic, copy) void (^notificationHandler)(NSDictionary *notification);
 @property (nonatomic, strong) NSData *deviceToken;
 
 @end
@@ -38,6 +39,7 @@ NSString *errorCallbackId;
 NSMutableArray *deliveredCouponsListeners;
 NSDictionary *preferences;
 NSMutableArray *beaconArray;
+NSMutableArray *notificationListeners;
 
 /*
  NSDictionary *jsonObj = [ [NSDictionary alloc]
@@ -52,6 +54,7 @@ NSMutableArray *beaconArray;
     _rangeBeaconsHandler = [self createRangeBeaconsHandler];
     _errorHandler = [self createErrorHandler];
     _couponHandler = [self createCouponHandler];
+    _notificationHandler = [self createNotificationHandler];
     CDVConfigParser *delegate = [[CDVConfigParser alloc] init];
     [self parseSettingsWithParser:delegate];
     self.settings = delegate.settings;
@@ -441,6 +444,16 @@ NSMutableArray *beaconArray;
         CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:results];
         [result setKeepCallbackAsBool:YES];
         for (NSString *callbackId in couponsListeners) {
+            [self.commandDelegate sendPluginResult:result callbackId:callbackId];
+        }
+    };
+}
+
+-(void (^)(NSDictionary *notif)) createNotificationHandler {
+    return ^(NSDictionary *notif) {
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:notif];
+        [result setKeepCallbackAsBool:YES];
+        for (NSString *callbackId in notificationListeners) {
             [self.commandDelegate sendPluginResult:result callbackId:callbackId];
         }
     };
@@ -838,6 +851,15 @@ NSMutableArray *beaconArray;
     
 }
 
+
+- (void) addPushListener:(CDVInvokedUrlCommand *)command
+{
+    if (notificationListeners == nil) {
+        notificationListeners = [[NSMutableArray alloc] init];
+    }
+    [notificationListeners addObject:command.callbackId];
+}
+
 - (void)registerPush
 {
     UIApplication *application = [UIApplication sharedApplication];
@@ -908,6 +930,7 @@ NSMutableArray *beaconArray;
 - (void)notificationReceived
 {
     NSLog(@"notificationReceived: %@ - isInline: %hhd", notificationMessage, isInline);
+    _notificationHandler([notificationMessage valueForKey:@"aps"]);
 };
 
 @end

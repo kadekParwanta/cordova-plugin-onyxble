@@ -35,6 +35,7 @@
 - (void) showCoupon:(CDVInvokedUrlCommand *)command;
 - (void) getTags:(CDVInvokedUrlCommand *)command;
 - (void) buzzBeacon:(CDVInvokedUrlCommand *)command;
+- (void) addPushListener:(CDVInvokedUrlCommand *)command;
 
 //Push Notifications
 @property (nonatomic, strong) NSDictionary *notificationMessage;
