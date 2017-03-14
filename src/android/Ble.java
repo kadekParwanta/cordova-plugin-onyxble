@@ -607,7 +607,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     }
 
     private void initSDK() {
-        beaconManager.setDebugMode(LoggingStrategy.DEBUG);
+        beaconManager.setDebugMode(LoggingStrategy.LOGCAT);
         beaconManager.setAPIEndpoint("https://connect.onyxbeacon.com");
         beaconManager.setCouponEnabled(true);
         beaconManager.setAPIContentEnabled(true);
@@ -647,7 +647,6 @@ public class Ble extends CordovaPlugin implements BleStateListener {
             } else {
                 // Enable scanner in foreground mode and register receiver
                 beaconManager.setForegroundMode(true);
-                beaconManager.startScan();
                 PluginResult result = new PluginResult(PluginResult.Status.OK,"Success");
                 result.setKeepCallback(true);
                 messageChannel.sendPluginResult(result);
