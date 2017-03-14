@@ -147,9 +147,9 @@ public class Ble extends CordovaPlugin implements BleStateListener {
             } else if (action.equalsIgnoreCase(ACTION_STOP_SCAN)) {
                 beaconManager.stopScan();
             }  else if (action.equalsIgnoreCase(ACTION_ENTER_BACKGROUND)) {
-                enterBackground();
+                enterBackground(callbackContext);
             }  else if (action.equalsIgnoreCase(ACTION_ENTER_FOREGROUND)) {
-                enterForeground();
+                enterForeground(callbackContext);
             } else if (action.equalsIgnoreCase(ACTION_ADD_COUPON_LISTENER)) {
                 addCouponReceiver(callbackContext);
             }   else if (action.equalsIgnoreCase(ACTION_ADD_DELIVERED_COUPON_LISTENER)) {
@@ -511,7 +511,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         editor.apply();
     }
 
-    private void enterBackground() {
+    private void enterBackground(CallbackContext messageChannel) {
         beaconManager.setForegroundMode(false);
         // Unregister content receiver
         if (bleStateRegistered) {
@@ -523,9 +523,13 @@ public class Ble extends CordovaPlugin implements BleStateListener {
             cordova.getActivity().unregisterReceiver(mContentReceiver);
             receiverRegistered = false;
         }
+
+        PluginResult result = new PluginResult(PluginResult.Status.OK,"enterBackground invoked");
+        result.setKeepCallback(true);
+        messageChannel.sendPluginResult(result);
     }
 
-    private void enterForeground() {
+    private void enterForeground(CallbackContext messageChannel) {
         if (mBleReceiver == null) mBleReceiver = BleStateReceiver.getInstance();
         cordova.getActivity().registerReceiver(mContentReceiver, new IntentFilter(CONTENT_INTENT_FILTER));
         receiverRegistered = true;
@@ -535,17 +539,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
             mContentReceiver = ContentReceiver.getInstance();
         cordova.getActivity().registerReceiver(mContentReceiver, new IntentFilter(CONTENT_INTENT_FILTER));
         receiverRegistered = true;
-        if (BluetoothAdapter.getDefaultAdapter() == null) {
-            Log.e(TAG, "Device does not support Bluetooth");
-        } else {
-            if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-                Log.e(TAG, "Please turn on bluetooth");
-            } else {
-                // Enable scanner in foreground mode and register receiver
-                beaconManager = OnyxBeaconApplication.getOnyxBeaconManager(cordova.getActivity());
-                beaconManager.setForegroundMode(true);
-            }
-        }
+        startForeGround(messageChannel);
     }
 
     private static HashMap<String, Object> jsonToMap(JSONObject json) throws JSONException {
@@ -635,6 +629,10 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         authData.setSecret(secret);
         authData.setClientId(clientId);
         beaconManager.setAuthData(authData);
+        startForeGround(messageChannel);
+    }
+
+    private void startForeGround(CallbackContext messageChannel){
         if (BluetoothAdapter.getDefaultAdapter() == null) {
             PluginResult result = new PluginResult(PluginResult.Status.ERROR,"Device does not support Bluetooth");
             result.setKeepCallback(true);
