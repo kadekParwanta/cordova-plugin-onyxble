@@ -81,6 +81,7 @@ public class Ble extends CordovaPlugin implements BleStateListener {
     // OnyxBeacon SDK
     private OnyxBeaconManager beaconManager;
     private String CONTENT_INTENT_FILTER;
+    private String BLE_INTENT_FILTER;
     private ContentReceiver mContentReceiver;
     private BleStateReceiver mBleReceiver;
     private boolean receiverRegistered = false;
@@ -113,11 +114,13 @@ public class Ble extends CordovaPlugin implements BleStateListener {
         mBleReceiver = BleStateReceiver.getInstance();
         mBleReceiver.setBleStateListener(this);
 
-        String BLE_INTENT_FILTER = cordova.getActivity().getPackageName() + ".scan";
+        BLE_INTENT_FILTER = cordova.getActivity().getPackageName() + ".scan";
+        Log.d(TAG,"BLE_INTENT_FILTER = " + BLE_INTENT_FILTER);
         cordova.getActivity().registerReceiver(mBleReceiver, new IntentFilter(BLE_INTENT_FILTER));
         bleStateRegistered = true;
 
         CONTENT_INTENT_FILTER = cordova.getActivity().getPackageName() + ".content";
+        Log.d(TAG,"CONTENT_INTENT_FILTER = " + CONTENT_INTENT_FILTER);
         cordova.getActivity().registerReceiver(mContentReceiver, new IntentFilter(CONTENT_INTENT_FILTER));
         receiverRegistered = true;
     }
@@ -220,8 +223,8 @@ public class Ble extends CordovaPlugin implements BleStateListener {
                 callbackContext.success("Success");
             } else if (action.equals("onResume")) {
                 if (mBleReceiver == null) mBleReceiver = BleStateReceiver.getInstance();
-                cordova.getActivity().registerReceiver(mContentReceiver, new IntentFilter(CONTENT_INTENT_FILTER));
-                receiverRegistered = true;
+                cordova.getActivity().registerReceiver(mBleReceiver, new IntentFilter(BLE_INTENT_FILTER));
+                bleStateRegistered = true;
                 mBleReceiver.setBleStateListener(instance);
 
                 if (mContentReceiver == null)
@@ -531,8 +534,8 @@ public class Ble extends CordovaPlugin implements BleStateListener {
 
     private void enterForeground(CallbackContext messageChannel) {
         if (mBleReceiver == null) mBleReceiver = BleStateReceiver.getInstance();
-        cordova.getActivity().registerReceiver(mContentReceiver, new IntentFilter(CONTENT_INTENT_FILTER));
-        receiverRegistered = true;
+        cordova.getActivity().registerReceiver(mBleReceiver, new IntentFilter(BLE_INTENT_FILTER));
+        bleStateRegistered = true;
         mBleReceiver.setBleStateListener(instance);
 
         if (mContentReceiver == null)
