@@ -151,12 +151,6 @@ typedef void (^OnyxBeaconPushNotificationsHandler)(NSDictionary*,  NSError*);
 @property (nonatomic, assign) BOOL showBluetoothPowerAlertKey;
 
 /**
- *
- * Set YES if you want to use CachedContent. All the content is downloaded on the device and deliverd from there. Default is NO.
- */
-@property (nonatomic, assign) BOOL useCachedContent;
-
-/**
  * OnyxBeacon SDK version
  */
 @property (nonatomic, strong, readonly) NSString *version;
@@ -197,9 +191,16 @@ typedef void (^OnyxBeaconPushNotificationsHandler)(NSDictionary*,  NSError*);
 - (void)setLogger:(OnyxBeaconLogger)logger;
 
 /**
+ * @deprecated This method is deprecated starting in version x.x
+ * @note Please use @code appWillResignActive @endcode instead.
  * Call in applicationDidEnterBackground: method.
  */
-- (void)didEnterBackground;
+- (void)didEnterBackground __attribute__((deprecated));
+
+/**
+ * Call in applicationWillResignActive: method.
+ */
+- (void)appWillResignActive;
 
 /**
  * Call in applicationWillEnterForeground: method.

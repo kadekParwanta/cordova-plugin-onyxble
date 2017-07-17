@@ -1,5 +1,5 @@
 # cordova-plugin-onyxble
-This plugin is built using Onyx SDK version 2.2.1.
+This plugin is built using Onyx SDK version 2.2.2 for iOS and version 2.5.2 for Android.
 
 
 ## Get Started
@@ -9,7 +9,7 @@ This plugin is built using Onyx SDK version 2.2.1.
 
 ## Installing the plugin
 ```
-cordova plugin add https://github.com/kadekParwanta/cordova-plugin-onyxble --variable GMS_VERSION="8487000" --variable PACKAGE_NAME="com.kadek.onyxreceiver"
+cordova plugin add https://github.com/kadekParwanta/cordova-plugin-onyxble --variable PACKAGE_NAME="com.kadek.onyxreceiver"
 ```
 
 ## Define the clientId and secret

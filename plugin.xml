@@ -4,7 +4,7 @@
         xmlns:android="http://schemas.android.com/apk/res/android"          
         xmlns:tools="http://schemas.android.com/tools"   
         id="cordova-plugin-onyxble"
-        version="2.0.1-dev">
+        version="1.0.1">
     <name>Ble</name>
     <description>OnyxBeacon plugin</description>
     <license>Commercial</license>
@@ -99,7 +99,7 @@
         </config-file>
 
         <config-file target="*-Info.plist" parent="NSLocationAlwaysUsageDescription">
-            <string>SampleApp requires location services to detect beacons around you</string>
+            <string>The location services is required to detect beacons around you</string>
         </config-file>
 
         <config-file target="*-Info.plist" parent="UIBackgroundModes">

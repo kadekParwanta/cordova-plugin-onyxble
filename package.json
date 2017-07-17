@@ -1,0 +1,33 @@
+{
+  "name": "cordova-plugin-onyxble",
+  "version": "1.0.1",
+  "description": "OnyxBeacon plugin",
+  "cordova": {
+    "id": "cordova-plugin-onyxble",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kadekParwanta/cordova-plugin-onyxble"
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-android",
+    "cordova-ios"
+  ],
+  "engines": [
+    {
+      "name": "cordova",
+      "version": ">=4.0.0"
+    }
+  ],
+  "author": "Kadek Juliana Parwanta",
+  "license": "Commercial",
+  "bugs": {
+    "url": "https://github.com/kadekParwanta/cordova-plugin-onyxble/issues"
+  },
+  "homepage": "https://github.com/kadekParwanta/cordova-plugin-onyxble#readme"
+}
